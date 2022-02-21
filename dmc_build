@@ -1,0 +1,229 @@
+##!/bin/bash
+
+usage() {
+	echo ""
+	echo "Usage: $(basename $0) [options] [-jn] [-v] [-h]"
+	echo "Options:"
+	echo "  release, debug: "
+	echo "      Specifies the build type."
+	echo "  clean: "
+	echo "      Clean the build folder."
+	echo "  -h, --help:"
+	echo "      Print this message and exit."
+	echo "  -v: verbose make"
+	echo ""
+	exit 0
+}
+
+TIME_BEGIN=$(date -u +%s)
+HOST_OS=$(uname)
+HOST_ARCH=$(uname -m)
+
+case ${HOST_ARCH} in
+i386 | i686)
+	HOST_ARCH="i386"
+	;;
+x86_64 | amd64)
+	HOST_ARCH="amd64"
+	;;
+armv6 | armv7 | armv7s | armv7l)
+	HOST_ARCH="arm"
+	;;
+aarch64)
+	HOST_ARCH="arm64"
+	;;
+mips | mipsel)
+	HOST_ARCH="mips"
+	;;
+mips64)
+	HOST_ARCH="mips64"
+	;;
+powerpc)
+	HOST_ARCH="ppc"
+	;;
+ppc64)
+	HOST_ARCH="ppc64"
+	;;
+esac
+
+TARGET_OS=$HOST_OS
+TARGET_ARCH=$HOST_ARCH
+BUILD_TYPE="release"
+
+for i in "$@"; do
+	case $i in
+	release | debug | clean)
+		BUILD_TYPE=$i
+		;;
+	ci)
+		CI="ci"
+		;;
+	-j*)
+		ENABLE_JOBS=1
+		BUILD_JOBS="${i#-j}"
+		;;
+	-v)
+		BUILD_VERBOSE='VERBOSE=1'
+		;;
+	--help | -h)
+		usage
+		;;
+	*)
+		echo "illegal option $i"
+		usage
+		;;
+	esac
+done
+
+if [ "$ENABLE_JOBS" = "1" -a "$BUILD_JOBS" = "" ]; then
+	#get cpu core count
+	CPU_CORE=1
+	case ${HOST_OS} in
+	Darwin)
+		CPU_CORE=$(sysctl hw.ncpu | awk '{print $2}')
+		;;
+	Linux)
+		CPU_CORE=$(cat /proc/cpuinfo | grep processor | wc -l)
+		;;
+	Windows)
+		CPU_CORE=$(echo $NUMBER_OF_PROCESSORS)
+		;;
+	esac
+	echo "host machine has ${CPU_CORE} core"
+
+	if [ "$CPU_CORE" = "1" ]; then
+		BUILD_JOBS=""
+	else
+		# set build jobs with cpu core count
+		BUILD_JOBS=${CPU_CORE}
+	fi
+fi
+
+# ==================== create folder ==========================
+DMC_PATH=$(pwd)
+OUT_PATH=${DMC_PATH}/out
+WORK_PATH=${OUT_PATH}/${TARGET_OS}_${TARGET_ARCH}_${BUILD_TYPE}
+BIN_ROOT=${DMC_PATH}/bin
+BIN_PATH=${BIN_ROOT}/${TARGET_OS}_${TARGET_ARCH}_${BUILD_TYPE}
+
+if [ ${BUILD_TYPE} = 'clean' ]; then
+	if [ -e "${OUT_PATH}" ]; then
+		rm -rf ${OUT_PATH}
+	fi
+
+	if [ -e "${BIN_ROOT}" ]; then
+		rm -rf ${BIN_ROOT}
+	fi
+
+	exit 0
+fi
+
+if [ ! -e "${OUT_PATH}" ]; then
+	mkdir "${OUT_PATH}"
+fi
+
+if [ ! -e ${WORK_PATH} ]; then
+	mkdir ${WORK_PATH}
+fi
+
+# ==================== build eos ==========================
+export CPU_CORE=${BUILD_JOBS}
+BASE_EXP="s/. \"\$FILE\"/echo -e \"1\\\\n1\" | . \"\$FILE\"/g"
+if [ ! "$BUILD_JOBS" = "" ]; then
+	BASE_EXP="${BASE_EXP};s/\"\${JOBS}\"/${BUILD_JOBS}/g"
+fi
+
+cd eos
+git submodule update --init --recursive
+cd scripts
+
+BUILD_TYPE_EOS=$(echo ${BUILD_TYPE:0:1} | tr '[a-z]' '[A-Z]')${BUILD_TYPE:1}
+
+sed "${BASE_EXP};/CURRENT_USER/a\\
+NONINTERACTIVE=true\\
+PROCEED=true\\
+CORE_SYMBOL_NAME=DMC\\
+BUILD_DIR_CLEANUP_SKIP=true\\
+CMAKE_BUILD_TYPE=${BUILD_TYPE_EOS}\\
+export BUILD_DIR="\${REPO_ROOT}/build_\${ARCH}_\${CMAKE_BUILD_TYPE}" \\
+LOCAL_CMAKE_FLAGS=\"-DEOSIO_ROOT_KEY=DM6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV\"
+" eosio_build.sh | bash
+
+cd ${DMC_PATH}
+
+# ==================== build fibjs ==========================
+cd fibjs
+git submodule update --init --recursive
+sh build ${BUILD_TYPE} -j${BUILD_JOBS}
+if [ $? != 0 ]; then
+	exit 1
+fi
+
+cd "${DMC_PATH}"
+
+# ==================== build dmc ==========================
+if [ "${HOST_OS}" = 'Linux' ]; then
+	export CC=clang
+	export CXX=clang++
+fi
+
+cd ${WORK_PATH}
+GIT_INFO=$(git describe --always)
+cmake -Wno-dev -DBUILD_TYPE=${BUILD_TYPE} -DBUILD_OPTION="${BUILD_OPTION}" -DGIT_INFO=$GIT_INFO ${DMC_PATH} >CMake.log
+if [ $? != 0 ]; then
+	exit 1
+fi
+
+if [ ! "$BUILD_JOBS" = "" ]; then
+	sh -c "${BUILD_VERBOSE} make -j${BUILD_JOBS}"
+else
+	sh -c "${BUILD_VERBOSE} make"
+fi
+if [ $? != 0 ]; then
+	exit 1
+fi
+
+
+# ==================== build installer ==========================
+if [ "${BUILD_TYPE}" = "release" ]; then
+	cd "${BIN_PATH}"
+	cp "${DMC_PATH}/installer.txt" "installer.sh"
+	tar -zcf dmc.tar.gz dmc
+	echo '[100%] Built target dmc.tar.gz'
+	cat dmc.tar.gz >> installer.sh
+	chmod 777 installer.sh
+	echo '[100%] Built target install.sh'
+
+	if [ $TARGET_OS = "Linux" ]; then
+		echo ''
+		echo '==== GLIBC ===='
+		objdump dmc -p | grep GLIBC_[0-9.]* -o | sort | uniq
+	fi
+
+	if [ "${CI}" = "ci" ]; then
+		xz -cz -T2 dmc > dmc.xz
+		echo '[100%] Built target dmc.xz'
+	fi
+fi
+
+cd "${DMC_PATH}"
+
+txtbld=$(tput bold)
+bldred=${txtbld}$(tput setaf 1)
+txtrst=$(tput sgr0)
+
+printf "\n\n${bldred}"
+printf "\t     _____          ___           ___     \n"
+printf "\t    /  /::\\        /__/\\         /  /\\    \n"
+printf "\t   /  /:/\\:\\      |  |::\\       /  /:/    \n"
+printf "\t  /  /:/  \\:\\     |  |:|:\\     /  /:/     \n"
+printf "\t /__/:/ \\__\\:|  __|__|:|\\:\\   /  /:/  ___ \n"
+printf "\t \\  \\:\\ /  /:/ /__/::::| \\:\\ /__/:/  /  /\\ \n"
+printf "\t  \\  \\:\\  /:/  \\  \\:\\~~\\__\\/ \\  \\:\\ /  /:/\n"
+printf "\t   \\  \\:\\/:/    \\  \\:\\        \\  \\:\\  /:/ \n"
+printf "\t    \\  \\::/      \\  \\:\\        \\  \\:\\/:/  \n"
+printf "\t     \\__\\/        \\  \\:\\        \\  \\::/   \n"
+printf "\t                   \\__\\/         \\__\\/    \n"
+printf "${txtrst}"
+
+printf "\\n\\tDMC has been successfully built.\\n\\n"

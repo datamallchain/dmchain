@@ -1,0 +1,1 @@
+#include "../fibjs/include/object.h"
