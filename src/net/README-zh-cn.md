@@ -42,7 +42,7 @@
 * 如果站点的所有者 (拥有私钥的那个人) 修改了站点, 并且他/她签名了新的 `content.json` 然后推送至其他节点，
 那么所有节点将会在验证 `content.json` 的真实性 (使用签名)后, 下载修改后的文件并推送至其他节点。
 
-####  [有关于 ZeroNet 加密, 站点更新, 多用户站点的幻灯片 »](https://docs.google.com/presentation/d/1_2qK1IuOKJ51pgBvllZ9Yu7Au2l551t3XBgyTSvilew/pub?start=false&loop=false&delayms=3000)
+####  [有关于 ZeroNet 加密, 站点更新, 多用户站点的幻灯片 »](https://docs.google.com/presentation/d/1qBxkroB_iiX2zHEn0dt-N-qRZgyEzui46XS2hEa3AA4/pub?start=false&loop=false&delayms=3000)
 ####  [常见问题 »](https://zeronet.readthedocs.org/en/latest/faq/)
 
 ####  [ZeroNet开发者文档 »](https://zeronet.readthedocs.org/en/latest/site_development/getting_started/)
@@ -59,16 +59,12 @@
 ## 如何加入 ？
 
 * 下载 ZeroBundle 文件包:
-  * [Microsoft Windows](https://github.com/HelloZeroNet/ZeroBundle/raw/master/dist/ZeroBundle-win.zip)
-  * [Apple OS X](https://github.com/HelloZeroNet/ZeroBundle/raw/master/dist/ZeroBundle-mac-osx.zip)
+  * [Microsoft Windows](https://github.com/HelloZeroNet/ZeroNet-win/archive/dist/ZeroNet-win.zip)
+  * [Apple macOS](https://github.com/HelloZeroNet/ZeroNet-mac/archive/dist/ZeroNet-mac.zip)
   * [Linux 64bit](https://github.com/HelloZeroNet/ZeroBundle/raw/master/dist/ZeroBundle-linux64.tar.gz)
   * [Linux 32bit](https://github.com/HelloZeroNet/ZeroBundle/raw/master/dist/ZeroBundle-linux32.tar.gz)
 * 解压缩
-* 运行 `ZeroNet.cmd` (win), `ZeroNet(.app)` (osx), `ZeroNet.sh` (linux)
-
-如果你在 OS X 上遇到了 "classic environment no longer supported" 错误，请打开一个终端然后把 ZeroNet.app 拖进去
-
-在你打开时他将会自动下载最新版本的 ZeroNet 。
+* 运行 `ZeroNet.exe` (win), `ZeroNet(.app)` (osx), `ZeroNet.sh` (linux)
 
 ### Linux 命令行
 
@@ -89,6 +85,12 @@
 * 执行 `python zeronet.py` 来启动
 * 在你的浏览器中打开 http://127.0.0.1:43110/
 
+### [FreeBSD](https://www.freebsd.org/)
+
+* `pkg install zeronet` 或者 `cd /usr/ports/security/zeronet/ && make install clean`
+* `sysrc zeronet_enable="YES"`
+* `service zeronet start`
+* 在你的浏览器中打开 http://127.0.0.1:43110/
 
 ### [Vagrant](https://www.vagrantup.com/)
 

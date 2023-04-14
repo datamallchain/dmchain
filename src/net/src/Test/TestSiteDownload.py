@@ -35,14 +35,14 @@ class TestSiteDownload:
             def boostRequest(inner_path):
                 # I really want these file
                 if inner_path == "index.html":
-                    site_temp.needFile("data/img/multiuser.png", priority=9, blocking=False)
-                    site_temp.needFile("data/img/direct_domains.png", priority=10, blocking=False)
+                    site_temp.needFile("data/img/multiuser.png", priority=15, blocking=False)
+                    site_temp.needFile("data/img/direct_domains.png", priority=15, blocking=False)
             site_temp.onFileDone.append(boostRequest)
             site_temp.download(blind_includes=True).join(timeout=5)
             file_requests = [request[2]["inner_path"] for request in requests if request[0] in ("getFile", "streamFile")]
             # Test priority
             assert file_requests[0:2] == ["content.json", "index.html"]  # Must-have files
-            assert file_requests[2:4] == ["data/img/direct_domains.png", "data/img/multiuser.png"]  # Directly requested files
+            assert file_requests[2:4] == ["data/img/multiuser.png", "data/img/direct_domains.png"]  # Directly requested files
             assert file_requests[4:6] == ["css/all.css", "js/all.js"]  # Important assets
             assert file_requests[6] == "dbschema.json"  # Database map
             assert "-default" in file_requests[-1]  # Put default files for cloning to the end
@@ -167,7 +167,9 @@ class TestSiteDownload:
         file_server_full.sites[site_full.address] = site_full  # Add site
         site_full.storage.verifyFiles(quick_check=True)  # Check optional files
         site_full_peer = site.addPeer("127.0.0.1", 1546)  # Add it to source server
-        assert site_full_peer.updateHashfield()  # Update hashfield
+        hashfield = site_full_peer.updateHashfield()  # Update hashfield
+        assert len(site_full.content_manager.hashfield) == 8
+        assert hashfield
         assert site_full.storage.isFile("data/optional.txt")
         assert site_full.storage.isFile("data/users/1CjfbrbwtP8Y2QjPy12vpTATkUT7oSiPQ9/peanut-butter-jelly-time.gif")
         assert len(site_full_peer.hashfield) == 8
@@ -178,7 +180,6 @@ class TestSiteDownload:
 
         # Init client server
         site_temp.connection_server = ConnectionServer("127.0.0.1", 1545)
-        site_temp.announce = mock.MagicMock(return_value=True)  # Don't try to find peers from the net
         site_temp.addPeer("127.0.0.1", 1544)  # Add source server
 
         # Download normal files

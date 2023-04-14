@@ -21,18 +21,24 @@ class DbCursor:
                 for key, value in params.items():
                     if type(value) is list:
                         if key.startswith("not__"):
-                            query_wheres.append(key.replace("not__", "")+" NOT IN ("+",".join(["?"]*len(value))+")")
+                            query_wheres.append(key.replace("not__", "") + " NOT IN (" + ",".join(["?"] * len(value)) + ")")
                         else:
-                            query_wheres.append(key+" IN ("+",".join(["?"]*len(value))+")")
+                            query_wheres.append(key + " IN (" + ",".join(["?"] * len(value)) + ")")
                         values += value
                     else:
                         if key.startswith("not__"):
-                            query_wheres.append(key.replace("not__", "")+" != ?")
+                            query_wheres.append(key.replace("not__", "") + " != ?")
+                        elif key.endswith(">"):
+                            query_wheres.append(key.replace(">", "") + " > ?")
+                        elif key.endswith("<"):
+                            query_wheres.append(key.replace("<", "") + " < ?")
                         else:
-                            query_wheres.append(key+" = ?")
+                            query_wheres.append(key + " = ?")
                         values.append(value)
                 wheres = " AND ".join(query_wheres)
-                query = re.sub("(.*)[?]", "\\1%s" % wheres, query)  # Replace the last ?
+                if wheres == "":
+                    wheres = "1"
+                query = re.sub("(.*)[?]", "\\1 %s" % wheres, query)  # Replace the last ?
                 params = values
             else:
                 # Convert param dict to INSERT INTO table (key, key2) VALUES (?, ?) format
@@ -64,20 +70,25 @@ class DbCursor:
         # if query == "BEGIN": self.logging = False # Turn logging off on transaction commit
         return res
 
+    # Creates on updates a database row without incrementing the rowid
+    def insertOrUpdate(self, table, query_sets, query_wheres, oninsert={}):
+        sql_sets = ["%s = :%s" % (key, key) for key in query_sets.keys()]
+        sql_wheres = ["%s = :%s" % (key, key) for key in query_wheres.keys()]
+
+        params = query_sets
+        params.update(query_wheres)
+        self.cursor.execute(
+            "UPDATE %s SET %s WHERE %s" % (table, ", ".join(sql_sets), " AND ".join(sql_wheres)),
+            params
+        )
+        if self.cursor.rowcount == 0:
+            params.update(oninsert)  # Add insert-only fields
+            self.execute("INSERT INTO %s ?" % table, params)
+
     # Create new table
     # Return: True on success
     def createTable(self, table, cols):
         # TODO: Check current structure
-        """table_changed = False
-        res = c.execute("PRAGMA table_info(%s)" % table)
-        if res:
-                for row in res:
-                        print row["name"], row["type"], cols[row["name"]]
-                        print row
-        else:
-                table_changed = True
-
-        if table_changed: # Table structure changed, drop and create again"""
         self.execute("DROP TABLE IF EXISTS %s" % table)
         col_definitions = []
         for col_name, col_type in cols:
@@ -139,6 +150,8 @@ class DbCursor:
                 self.execute("INSERT INTO json ?", {"site": site_address, "directory": directory, "file_name": file_name})
                 res = self.execute("SELECT * FROM json WHERE ? LIMIT 1", {"site": site_address, "directory": directory, "file_name": file_name})
                 row = res.fetchone()
+        else:
+            raise Exception("Dbschema version %s not supported" % self.db.schema.get("version"))
         return row
 
     def close(self):

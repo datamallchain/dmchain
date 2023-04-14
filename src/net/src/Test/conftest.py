@@ -5,6 +5,7 @@ import time
 import logging
 import json
 import shutil
+import gc
 
 import pytest
 import mock
@@ -25,7 +26,7 @@ sys.path.insert(0, os.path.abspath(os.path.dirname(__file__) + "/.."))  # Import
 
 from Config import config
 config.argv = ["none"]  # Dont pass any argv to config parser
-config.parse()  # Plugins need to access the configuration
+config.parse(silent=True)  # Plugins need to access the configuration
 logging.basicConfig(level=logging.DEBUG, stream=sys.stdout)
 
 from Plugin import PluginManager
@@ -48,7 +49,7 @@ if os.path.isfile("%s-temp/content.db" % config.data_dir):
 
 import gevent
 from gevent import monkey
-monkey.patch_all(thread=False)
+monkey.patch_all(thread=False, subprocess=False)
 
 from Site import Site
 from Site import SiteManager
@@ -60,6 +61,7 @@ from Ui import UiWebsocket
 from Tor import TorManager
 from Content import ContentDb
 from util import RateLimit
+from Db import Db
 
 # SiteManager.site_manager.load = mock.MagicMock(return_value=True)  # Don't try to load from sites.json
 # SiteManager.site_manager.save = mock.MagicMock(return_value=True)  # Don't try to load from sites.json
@@ -102,6 +104,7 @@ def resetTempSettings(request):
 
 @pytest.fixture()
 def site(request):
+    threads_before = [obj for obj in gc.get_objects() if isinstance(obj, gevent.Greenlet)]
     # Reset ratelimit
     RateLimit.queue_db = {}
     RateLimit.called_db = {}
@@ -115,12 +118,13 @@ def site(request):
     shutil.copytree(site.storage.getPath("") + "-original", site.storage.getPath(""))
     def cleanup():
         site.storage.deleteFiles()
-        site.content_manager.contents.db.deleteSite("1TeSTvb4w2PWE81S2rEELgmX2GCCExQGT")
+        site.content_manager.contents.db.deleteSite(site)
         del SiteManager.site_manager.sites["1TeSTvb4w2PWE81S2rEELgmX2GCCExQGT"]
         site.content_manager.contents.db.close()
         db_path = "%s/content.db" % config.data_dir
         os.unlink(db_path)
         del ContentDb.content_dbs[db_path]
+        gevent.killall([obj for obj in gc.get_objects() if isinstance(obj, gevent.Greenlet) and obj not in threads_before])
     request.addfinalizer(cleanup)
 
     site = Site("1TeSTvb4w2PWE81S2rEELgmX2GCCExQGT")  # Create new Site object to load content.json files
@@ -132,17 +136,19 @@ def site(request):
 
 @pytest.fixture()
 def site_temp(request):
+    threads_before = [obj for obj in gc.get_objects() if isinstance(obj, gevent.Greenlet)]
     with mock.patch("Config.config.data_dir", config.data_dir + "-temp"):
         site_temp = Site("1TeSTvb4w2PWE81S2rEELgmX2GCCExQGT")
         site_temp.announce = mock.MagicMock(return_value=True)  # Don't try to find peers from the net
 
     def cleanup():
         site_temp.storage.deleteFiles()
-        site_temp.content_manager.contents.db.deleteSite("1TeSTvb4w2PWE81S2rEELgmX2GCCExQGT")
+        site_temp.content_manager.contents.db.deleteSite(site_temp)
         site_temp.content_manager.contents.db.close()
         db_path = "%s-temp/content.db" % config.data_dir
         os.unlink(db_path)
         del ContentDb.content_dbs[db_path]
+        gevent.killall([obj for obj in gc.get_objects() if isinstance(obj, gevent.Greenlet) and obj not in threads_before])
     request.addfinalizer(cleanup)
     return site_temp
 
@@ -158,7 +164,9 @@ def user():
 def browser():
     try:
         from selenium import webdriver
+        print "Starting phantomjs..."
         browser = webdriver.PhantomJS(executable_path=PHANTOMJS_PATH, service_log_path=os.path.devnull)
+        print "Set window size..."
         browser.set_window_size(1400, 1000)
     except Exception, err:
         raise pytest.skip("Test requires selenium + phantomjs: %s" % err)
@@ -174,7 +182,7 @@ def site_url():
     return SITE_URL
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def file_server(request):
     request.addfinalizer(CryptConnection.manager.removeCerts)  # Remove cert files after end
     file_server = FileServer("127.0.0.1", 1544)
@@ -226,3 +234,51 @@ def tor_manager():
     except Exception, err:
         raise pytest.skip("Test requires Tor with ControlPort: %s, %s" % (config.tor_controller, err))
     return tor_manager
+
+@pytest.fixture()
+def db(request):
+    db_path = "%s/zeronet.db" % config.data_dir
+    schema = {
+        "db_name": "TestDb",
+        "db_file": "%s/zeronet.db" % config.data_dir,
+        "maps": {
+            "data.json": {
+                "to_table": [
+                    "test",
+                    {"node": "test", "table": "test_importfilter", "import_cols": ["test_id", "title"]}
+                ]
+            }
+        },
+        "tables": {
+            "test": {
+                "cols": [
+                    ["test_id", "INTEGER"],
+                    ["title", "TEXT"],
+                    ["json_id", "INTEGER REFERENCES json (json_id)"]
+                ],
+                "indexes": ["CREATE UNIQUE INDEX test_id ON test(test_id)"],
+                "schema_changed": 1426195822
+            },
+            "test_importfilter": {
+                "cols": [
+                    ["test_id", "INTEGER"],
+                    ["title", "TEXT"],
+                    ["json_id", "INTEGER REFERENCES json (json_id)"]
+                ],
+                "indexes": ["CREATE UNIQUE INDEX test_importfilter_id ON test_importfilter(test_id)"],
+                "schema_changed": 1426195822
+            }
+        }
+    }
+
+    if os.path.isfile(db_path):
+        os.unlink(db_path)
+    db = Db(schema, db_path)
+    db.checkTables()
+
+    def stop():
+        db.close()
+        os.unlink(db_path)
+
+    request.addfinalizer(stop)
+    return db

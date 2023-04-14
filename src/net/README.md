@@ -7,7 +7,7 @@ Decentralized websites using Bitcoin crypto and the BitTorrent network - https:/
 
 ## Why?
 
-* We believe in open, free, and uncensored networking and communication.
+* We believe in open, free, and uncensored network and communication.
 * No single point of failure: Site remains online so long as at least 1 peer is
   serving it.
 * No hosting costs: Sites are served by visitors.
@@ -63,27 +63,24 @@ Decentralized websites using Bitcoin crypto and the BitTorrent network - https:/
 
 ## How to join
 
-### Windows
+* Download ZeroBundle package:
+  * [Microsoft Windows](https://github.com/HelloZeroNet/ZeroNet-win/archive/dist/ZeroNet-win.zip)
+  * [Apple macOS](https://github.com/HelloZeroNet/ZeroNet-mac/archive/dist/ZeroNet-mac.zip)
+  * [Linux 64bit](https://github.com/HelloZeroNet/ZeroBundle/raw/master/dist/ZeroBundle-linux64.tar.gz)
+  * [Linux 32bit](https://github.com/HelloZeroNet/ZeroBundle/raw/master/dist/ZeroBundle-linux32.tar.gz)
+* Unpack anywhere
+* Run `ZeroNet.exe` (win), `ZeroNet(.app)` (osx), `ZeroNet.sh` (linux)
 
-* [Download ZeroBundle package](https://github.com/HelloZeroNet/ZeroBundle/releases/download/0.1.1/ZeroBundle-v0.1.1.zip) that includes Python 2.7.9 and all required libraries
-* Unpack to any directory
-* Run `zeronet.cmd`
+### Linux terminal
+
+* `wget https://github.com/HelloZeroNet/ZeroBundle/raw/master/dist/ZeroBundle-linux64.tar.gz`
+* `tar xvpfz ZeroBundle-linux64.tar.gz`
+* `cd ZeroBundle`
+* Start with `./ZeroNet.sh`
 
 It downloads the latest version of ZeroNet then starts it automatically.
 
-
-#### Alternative method for Windows by installing Python
-
-* [Install Python 2.7](https://www.python.org/ftp/python/2.7.9/python-2.7.9.msi)
-* [Install Python Greenlet](https://zeronet.io/files/windows/greenlet-0.4.5.win32-py2.7.exe)
-* [Install Python Gevent](https://zeronet.io/files/windows/gevent-1.0.1.win32-py2.7.exe)
-* [Install Python MsgPack](https://zeronet.io/files/windows/msgpack-python-0.4.2.win32-py2.7.exe)
-* [Download and extract ZeroNet](https://codeload.github.com/HelloZeroNet/ZeroNet/zip/master) to any directory
-* Run `start.py`
-
-### Linux
-
-#### Debian
+#### Manual install for Debian Linux
 
 * `sudo apt-get update`
 * `sudo apt-get install msgpack-python python-gevent`
@@ -91,20 +88,37 @@ It downloads the latest version of ZeroNet then starts it automatically.
 * `tar xvpfz master.tar.gz`
 * `cd ZeroNet-master`
 * Start with `python zeronet.py`
-* Open http://127.0.0.1:43110/ in your browser and enjoy! :)
+* Open http://127.0.0.1:43110/ in your browser
 
-#### Other Linux or without root access
-* Check your python version using `python --version`. if the returned version is not `Python 2.7.X` then try `python2` or `python2.7` command and use it from now on
-* `wget https://bootstrap.pypa.io/get-pip.py`
-* `python get-pip.py --user gevent msgpack-python`
-* Start with `python zeronet.py`
+### [Arch Linux](https://www.archlinux.org)
 
-### Mac
+* `git clone https://aur.archlinux.org/zeronet.git`
+* `cd zeronet-git`
+* `makepkg -srci`
+* `systemctl start zeronet`
+* Open http://127.0.0.1:43110/ in your browser
 
- * Install [Homebrew](http://brew.sh/)
- * `brew install python`
- * `pip install gevent msgpack-python`
- * [Download](https://github.com/HelloZeroNet/ZeroNet/archive/master.zip), Unpack, run `python zeronet.py`
+See [ArchWiki](https://wiki.archlinux.org)'s [ZeroNet
+article](https://wiki.archlinux.org/index.php/ZeroNet) for further assistance.
+
+### [Gentoo Linux](https://www.gentoo.org)
+
+* [`layman -a raiagent`](https://github.com/leycec/raiagent)
+* `echo '>=net-vpn/zeronet-0.5.4' >> /etc/portage/package.accept_keywords`
+* *(Optional)* Enable Tor support: `echo 'net-vpn/zeronet tor' >>
+  /etc/portage/package.use`
+* `emerge zeronet`
+* `rc-service zeronet start`
+* Open http://127.0.0.1:43110/ in your browser
+
+See `/usr/share/doc/zeronet-*/README.gentoo.bz2` for further assistance.
+
+### [FreeBSD](https://www.freebsd.org/)
+
+* `pkg install zeronet` or `cd /usr/ports/security/zeronet/ && make install clean`
+* `sysrc zeronet_enable="YES"`
+* `service zeronet start`
+* Open http://127.0.0.1:43110/ in your browser
 
 ### [Vagrant](https://www.vagrantup.com/)
 
@@ -115,7 +129,12 @@ It downloads the latest version of ZeroNet then starts it automatically.
 * Open http://127.0.0.1:43110/ in your browser
 
 ### [Docker](https://www.docker.com/)
-* `docker run -p 15441:15441 -p 43110:43110 nofish/zeronet`
+* `docker run -d -v <local_data_folder>:/root/data -p 15441:15441 -p 127.0.0.1:43110:43110 nofish/zeronet`
+* This Docker image includes the Tor proxy, which is disabled by default. Beware that some
+hosting providers may not allow you running Tor in their servers. If you want to enable it,
+set `ENABLE_TOR` environment variable to `true` (Default: `false`). E.g.:
+
+ `docker run -d -e "ENABLE_TOR=true" -v <local_data_folder>:/root/data -p 15441:15441 -p 127.0.0.1:43110:43110 nofish/zeronet`
 * Open http://127.0.0.1:43110/ in your browser
 
 ### [Virtualenv](https://virtualenv.readthedocs.org/en/latest/)
@@ -179,10 +198,11 @@ Site:13DNDk..bhC2 Successfuly published to 3 peers
 * That's it! You've successfully signed and published your modifications.
 
 
-## Donate
+## Help keep this project alive
 
 - Bitcoin: 1QDhxQ6PraUZa21ET5fYUCPgdrwBomnFgX
 - Paypal: https://zeronet.readthedocs.org/en/latest/help_zeronet/donate/
+- Gratipay: https://gratipay.com/zeronet/
 
 ### Sponsors
 
@@ -192,4 +212,4 @@ Site:13DNDk..bhC2 Successfuly published to 3 peers
 
 * More info, help, changelog, zeronet sites: https://www.reddit.com/r/zeronet/
 * Come, chat with us: [#zeronet @ FreeNode](https://kiwiirc.com/client/irc.freenode.net/zeronet) or on [gitter](https://gitter.im/HelloZeroNet/ZeroNet)
-* Email: hello@noloop.me
+* Email: hello@zeronet.io (PGP: CB9613AE)
