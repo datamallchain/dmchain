@@ -9,6 +9,7 @@ import math
 import msgpack
 
 from Plugin import PluginManager
+from Debug import Debug
 from Crypt import CryptHash
 from lib import merkletools
 from util import helper
@@ -125,7 +126,7 @@ class UiWebsocketPlugin(object):
         nonce = CryptHash.random()
         piece_size = 1024 * 1024
         inner_path = self.site.content_manager.sanitizePath(inner_path)
-        file_info = self.site.content_manager.getFileInfo(inner_path)
+        file_info = self.site.content_manager.getFileInfo(inner_path, new_file=True)
 
         content_inner_path_dir = helper.getDirname(file_info["content_inner_path"])
         file_relative_path = inner_path[len(content_inner_path_dir):]
@@ -149,13 +150,13 @@ class UiWebsocketPlugin(object):
 
 @PluginManager.registerTo("ContentManager")
 class ContentManagerPlugin(object):
-    def getFileInfo(self, inner_path):
+    def getFileInfo(self, inner_path, *args, **kwargs):
         if "|" not in inner_path:
-            return super(ContentManagerPlugin, self).getFileInfo(inner_path)
+            return super(ContentManagerPlugin, self).getFileInfo(inner_path, *args, **kwargs)
 
         inner_path, file_range = inner_path.split("|")
         pos_from, pos_to = map(int, file_range.split("-"))
-        file_info = super(ContentManagerPlugin, self).getFileInfo(inner_path)
+        file_info = super(ContentManagerPlugin, self).getFileInfo(inner_path, *args, **kwargs)
         return file_info
 
     def readFile(self, file_in, size, buff_size=1024 * 64):
@@ -241,7 +242,7 @@ class ContentManagerPlugin(object):
         piece_size = None
 
         # Don't re-hash if it's already in content.json
-        if content and file_relative_path in content.get("files_optional"):
+        if content and file_relative_path in content.get("files_optional", {}):
             file_node = content["files_optional"][file_relative_path]
             if file_node["size"] == file_size:
                 self.log.info("- [SAME SIZE] %s" % file_relative_path)
@@ -321,6 +322,11 @@ class ContentManagerPlugin(object):
             sha512 = file_info["sha512"]
             if sha512 in self.site.storage.piecefields:
                 del self.site.storage.piecefields[sha512]
+
+            # Also remove other pieces of the file from download queue
+            for key in self.site.bad_files.keys():
+                if key.startswith(inner_path + "|"):
+                    del self.site.bad_files[key]
         return super(ContentManagerPlugin, self).optionalRemove(inner_path, hash, size)
 
 
@@ -331,7 +337,8 @@ class SiteStoragePlugin(object):
         self.piecefields = collections.defaultdict(BigfilePiecefield)
         if "piecefields" in self.site.settings.get("cache", {}):
             for sha512, piecefield_packed in self.site.settings["cache"].get("piecefields").iteritems():
-                self.piecefields[sha512].unpack(piecefield_packed.decode("base64"))
+                if piecefield_packed:
+                    self.piecefields[sha512].unpack(piecefield_packed.decode("base64"))
             self.site.settings["cache"]["piecefields"] = {}
 
     def createSparseFile(self, inner_path, size, sha512=None):
@@ -378,7 +385,7 @@ class SiteStoragePlugin(object):
 
     def openBigfile(self, inner_path, prebuffer=0):
         file_info = self.site.content_manager.getFileInfo(inner_path)
-        if "piecemap" not in file_info:  # It's not a big file
+        if file_info and "piecemap" not in file_info:  # It's not a big file
             return False
 
         self.site.needFile(inner_path, blocking=False)  # Download piecemap
@@ -602,8 +609,11 @@ class PeerPlugin(object):
             return False
 
         self.piecefields = collections.defaultdict(BigfilePiecefieldPacked)
-        for sha512, piecefield_packed in res["piecefields_packed"].iteritems():
-            self.piecefields[sha512].unpack(piecefield_packed)
+        try:
+            for sha512, piecefield_packed in res["piecefields_packed"].iteritems():
+                self.piecefields[sha512].unpack(piecefield_packed)
+        except Exception as err:
+            self.log("Invalid updatePiecefields response: %s" % Debug.formatException(err))
 
         return self.piecefields
 
