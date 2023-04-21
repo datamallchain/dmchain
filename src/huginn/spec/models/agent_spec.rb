@@ -249,7 +249,7 @@ describe Agent do
         agent.should have(0).errors_on(:base)
       end
 
-      it "symbolizes options before validating" do
+      it "makes options symbol-indifferent before validating" do
         agent = Agents::SomethingSource.new(:name => "something")
         agent.user = users(:bob)
         agent.options["bad"] = true
