@@ -1,0 +1,13 @@
+diff a/src/huginn/app/assets/stylesheets/application.css.scss.erb b/src/huginn/app/assets/stylesheets/application.css.scss.erb	(rejected hunks)
+@@ -86,6 +86,11 @@ img.spinner {
+   overflow: hidden;
+ }
+ 
++span.not-applicable:after {
++  color: #bbbbbb;
++  content: "n/a";
++}
++
+ // Flash
+ 
+ .flash {
