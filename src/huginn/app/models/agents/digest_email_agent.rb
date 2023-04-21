@@ -27,33 +27,20 @@ module Agents
       incoming_events.each do |event|
         self.memory[:queue] ||= []
         self.memory[:queue] << event.payload
+        self.memory[:events] ||= []
+        self.memory[:events] << event.id
       end
     end
 
     def check
       if self.memory[:queue] && self.memory[:queue].length > 0
+        ids = self.memory[:events].join(",")
         groups = self.memory[:queue].map { |payload| present(payload) }
-        puts "Sending mail to #{user.email}..." unless Rails.env.test?
+        log "Sending digest mail to #{user.email} with events [#{ids}]"
         SystemMailer.delay.send_message(:to => user.email, :subject => options[:subject], :headline => options[:headline], :groups => groups)
         self.memory[:queue] = []
+        self.memory[:events] = []
       end
-    end
-
-    def present(payload)
-      if payload.is_a?(Hash)
-        payload = ActiveSupport::HashWithIndifferentAccess.new(payload)
-        MAIN_KEYS.each do |key|
-          return { :title => payload[key].to_s, :entries => present_hash(payload, key) } if payload.has_key?(key)
-        end
-
-        { :title => "Event", :entries => present_hash(payload) }
-      else
-        { :title => payload.to_s, :entries => [] }
-      end
-    end
-
-    def present_hash(hash, skip_key = nil)
-      hash.to_a.sort_by {|a| a.first.to_s }.map { |k, v| "#{k}: #{v}" unless k.to_s == skip_key.to_s }.compact
     end
   end
 end
