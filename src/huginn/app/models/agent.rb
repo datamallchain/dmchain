@@ -1,14 +1,12 @@
-require 'serialize_and_normalize'
+require 'json_with_indifferent_access'
 require 'assignable_types'
 require 'markdown_class_attributes'
 require 'utils'
 
 class Agent < ActiveRecord::Base
-  include SerializeAndNormalize
   include AssignableTypes
   include MarkdownClassAttributes
 
-  serialize_and_normalize :options, :memory
   markdown_class_attributes :description, :event_description
 
   load_types_in "Agents"
@@ -74,6 +72,10 @@ class Agent < ActiveRecord::Base
   # Implement me in your subclass to decide if your Agent is working.
   def working?
     raise "Implement me in your subclass"
+  end
+
+  def validate_options
+    # Implement me in your subclass to test for valid options.
   end
 
   def event_created_within(days)
