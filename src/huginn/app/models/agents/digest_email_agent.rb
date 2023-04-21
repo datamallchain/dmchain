@@ -1,6 +1,7 @@
 module Agents
   class DigestEmailAgent < Agent
-    MAIN_KEYS = %w[title message text main value].map(&:to_sym)
+    include EmailConcern
+
     default_schedule "5am"
 
     cannot_create_events!
@@ -20,14 +21,6 @@ module Agents
           :headline => "Your notifications:",
           :expected_receive_period_in_days => "2"
       }
-    end
-
-    def working?
-      last_receive_at && last_receive_at > options[:expected_receive_period_in_days].to_i.days.ago && !recent_error_logs?
-    end
-
-    def validate_options
-      errors.add(:base, "subject and expected_receive_period_in_days are required") unless options[:subject].present? && options[:expected_receive_period_in_days].present?
     end
 
     def receive(incoming_events)
