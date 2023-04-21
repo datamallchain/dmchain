@@ -1,11 +1,26 @@
 diff a/src/huginn/app/models/agent.rb b/src/huginn/app/models/agent.rb	(rejected hunks)
-@@ -18,9 +16,21 @@ class Agent < ActiveRecord::Base
+@@ -19,14 +19,6 @@ class Agent < ActiveRecord::Base
+   serialize :options, JSONWithIndifferentAccess
+   serialize :memory, JSONWithIndifferentAccess
  
-   attr_accessible :options, :memory, :name, :type, :schedule, :source_ids
+-  def options=(o)
+-    self[:options] = ActiveSupport::HashWithIndifferentAccess.new(o)
+-  end
+-
+-  def memory=(o)
+-    self[:memory] = ActiveSupport::HashWithIndifferentAccess.new(o)
+-  end
+-
+   validates_presence_of :name, :user
+   validate :sources_are_owned
+   validate :validate_schedule
+@@ -88,13 +79,20 @@ class Agent < ActiveRecord::Base
+     # Implement me in your subclass to test for valid options.
+   end
  
-+  serialize :options, JSONWithIndifferentAccess
-+  serialize :memory, JSONWithIndifferentAccess
-+
+-  def event_created_within(days)
+-    event = most_recent_event
+-    event && event.created_at > days.to_i.days.ago && event.payload.present? && event
 +  def options=(o)
 +    self[:options] = ActiveSupport::HashWithIndifferentAccess.new(o)
 +  end
@@ -14,10 +29,36 @@ diff a/src/huginn/app/models/agent.rb b/src/huginn/app/models/agent.rb	(rejected
 +    self[:memory] = ActiveSupport::HashWithIndifferentAccess.new(o)
 +  end
 +
-   validates_presence_of :name, :user
-   validate :sources_are_owned
-   validate :validate_schedule
-+  validate :validate_options
++  def event_created_within?(days)
++    last_event_at && last_event_at > days.to_i.days.ago
+   end
  
-   after_initialize :set_default_schedule
-   before_validation :set_default_schedule
+   def recent_error_logs?
+-    most_recent_log.try(:level) == 4
++    last_event_at && last_error_log_at && last_error_log_at > (last_event_at - 2.minutes)
+   end
+ 
+   def sources_are_owned
+@@ -134,10 +132,6 @@ class Agent < ActiveRecord::Base
+     self.schedule = nil if cannot_be_scheduled?
+   end
+ 
+-  def last_event_at
+-    @memoized_last_event_at ||= most_recent_event.try(:created_at)
+-  end
+-
+   def default_schedule
+     self.class.default_schedule
+   end
+@@ -172,6 +166,11 @@ class Agent < ActiveRecord::Base
+     end
+   end
+ 
++  def delete_logs!
++    logs.delete_all
++    update_column :last_error_log_at, nil
++  end
++
+   def log(message, options = {})
+     puts "Agent##{id}: #{message}" unless Rails.env.test?
+     AgentLog.log_for_agent(self, message, options)

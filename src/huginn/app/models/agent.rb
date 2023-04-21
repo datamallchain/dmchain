@@ -32,7 +32,6 @@ class Agent < ActiveRecord::Base
   has_many :events, :dependent => :delete_all, :inverse_of => :agent, :order => "events.id desc"
   has_one  :most_recent_event, :inverse_of => :agent, :class_name => "Event", :order => "events.id desc"
   has_many :logs, :dependent => :delete_all, :inverse_of => :agent, :class_name => "AgentLog", :order => "agent_logs.id desc"
-  has_one  :most_recent_log, :inverse_of => :agent, :class_name => "AgentLog", :order => "agent_logs.id desc"
   has_many :received_events, :through => :sources, :class_name => "Event", :source => :events, :order => "events.id desc"
   has_many :links_as_source, :dependent => :delete_all, :foreign_key => "source_id", :class_name => "Link", :inverse_of => :source
   has_many :links_as_receiver, :dependent => :delete_all, :foreign_key => "receiver_id", :class_name => "Link", :inverse_of => :receiver
