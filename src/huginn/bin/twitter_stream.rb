@@ -113,7 +113,7 @@ while true
     end
 
     print "Pausing..."; STDOUT.flush
-    sleep 5
+    sleep 1
     puts "done."
   rescue SignalException, SystemExit
     EventMachine::stop_event_loop if EventMachine.reactor_running?
