@@ -1,26 +1,20 @@
 diff a/src/huginn/app/models/agent.rb b/src/huginn/app/models/agent.rb	(rejected hunks)
-@@ -16,8 +17,7 @@ class Agent < ActiveRecord::Base
- 
-   attr_accessible :options, :memory, :name, :type, :schedule, :source_ids
- 
--  serialize :options, JSONWithIndifferentAccess
--  serialize :memory, JSONWithIndifferentAccess
-+  json_serialize :options, :memory
- 
-   validates_presence_of :name, :user
-   validate :sources_are_owned
-@@ -79,14 +79,6 @@ class Agent < ActiveRecord::Base
-     # Implement me in your subclass to test for valid options.
+@@ -114,18 +114,6 @@ class Agent < ActiveRecord::Base
+     end
    end
  
--  def options=(o)
--    self[:options] = ActiveSupport::HashWithIndifferentAccess.new(o)
+-  def last_event_at
+-    @memoized_last_event_at ||= most_recent_event.try(:created_at)
 -  end
 -
--  def memory=(o)
--    self[:memory] = ActiveSupport::HashWithIndifferentAccess.new(o)
+-  def set_default_schedule
+-    self.schedule = default_schedule unless schedule.present? || cannot_be_scheduled?
 -  end
 -
-   def event_created_within?(days)
-     last_event_at && last_event_at > days.to_i.days.ago
+-  def unschedule_if_cannot_schedule
+-    self.schedule = nil if cannot_be_scheduled?
+-  end
+-
+   def default_schedule
+     self.class.default_schedule
    end
