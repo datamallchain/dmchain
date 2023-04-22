@@ -1,4 +1,4 @@
-require 'json_with_indifferent_access'
+require 'json_serialized_field'
 require 'assignable_types'
 require 'markdown_class_attributes'
 require 'utils'
@@ -6,6 +6,7 @@ require 'utils'
 class Agent < ActiveRecord::Base
   include AssignableTypes
   include MarkdownClassAttributes
+  include JSONSerializedField
 
   markdown_class_attributes :description, :event_description
 
