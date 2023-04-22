@@ -101,6 +101,14 @@ class Agent < ActiveRecord::Base
     keep_events_for > 0 ? keep_events_for.days.from_now : nil
   end
 
+  def update_event_expirations!
+    if keep_events_for == 0
+      events.update_all :expires_at => nil
+    else
+      events.update_all "expires_at = DATE_ADD(`created_at`, INTERVAL #{keep_events_for.to_i} DAY)"
+    end
+  end
+
   def make_message(payload, message = options[:message])
     message.gsub(/<([^>]+)>/) { Utils.value_at(payload, $1) || "??" }
   end
@@ -151,6 +159,11 @@ class Agent < ActiveRecord::Base
 
   def error(message, options = {})
     log(message, options.merge(:level => 4))
+  end
+
+  def delete_logs!
+    logs.delete_all
+    update_column :last_error_log_at, nil
   end
 
   # Validations and Callbacks
