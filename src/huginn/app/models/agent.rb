@@ -94,7 +94,11 @@ class Agent < ActiveRecord::Base
 
   def create_event(attrs)
     if can_create_events?
-      events.create!({ :user => user, :expires_at => new_event_expiration_date }.merge(attrs))
+      events.create!({ 
+         :user => user, 
+         :expires_at => new_event_expiration_date, 
+         :propagate_immediately => propagate_immediately
+      }.merge(attrs))
     else
       error "This Agent cannot create events!"
     end
@@ -255,14 +259,19 @@ class Agent < ActiveRecord::Base
     # Find all Agents that have received Events since the last execution of this method.  Update those Agents with
     # their new `last_checked_event_id` and queue each of the Agents to be called with #receive using `async_receive`.
     # This is called by bin/schedule.rb periodically.
-    def receive!
+    def receive!(options={})
       Agent.transaction do
-        sql = Agent.
+        scope = Agent.
                 select("agents.id AS receiver_agent_id, sources.id AS source_agent_id, events.id AS event_id").
                 joins("JOIN links ON (links.receiver_id = agents.id)").
                 joins("JOIN agents AS sources ON (links.source_id = sources.id)").
                 joins("JOIN events ON (events.agent_id = sources.id AND events.id > links.event_id_at_creation)").
-                where("agents.last_checked_event_id IS NULL OR events.id > agents.last_checked_event_id").to_sql
+                where("agents.last_checked_event_id IS NULL OR events.id > agents.last_checked_event_id")
+        if options[:only_receivers].present?
+          scope = scope.where("agents.id in (?)", options[:only_receivers])
+        end
+ 
+        sql = scope.to_sql()
 
         agents_to_events = {}
         Agent.connection.select_rows(sql).each do |receiver_agent_id, source_agent_id, event_id|
