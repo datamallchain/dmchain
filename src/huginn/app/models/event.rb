@@ -19,8 +19,6 @@ class Event < ActiveRecord::Base
     where("events.created_at > ?", timespan)
   }
 
-  after_create :possibly_propagate
-
   # Emit this event again, as a new Event.
   def reemit!
     agent.create_event :payload => payload, :lat => lat, :lng => lng
@@ -32,12 +30,5 @@ class Event < ActiveRecord::Base
     affected_agents = Event.where("expires_at IS NOT NULL AND expires_at < ?", Time.now).group("agent_id").pluck(:agent_id)
     Event.where("expires_at IS NOT NULL AND expires_at < ?", Time.now).delete_all
     Agent.where(:id => affected_agents).update_all "events_count = (select count(*) from events where agent_id = agents.id)"
-  end
-
-  protected
-  def possibly_propagate
-    #immediately schedule agents that want immediate updates
-    propagate_ids = agent.receivers.where(:propagate_immediately => true).pluck(:id)
-    Agent.receive!(:only_receivers => propagate_ids) unless propagate_ids.empty?
   end
 end

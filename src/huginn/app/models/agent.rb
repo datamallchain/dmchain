@@ -22,10 +22,13 @@ class Agent < ActiveRecord::Base
 
   attr_accessible :options, :memory, :name, :type, :schedule, :source_ids, :keep_events_for
 
+  json_serialize :options, :memory
+
   validates_presence_of :name, :user
   validates_inclusion_of :keep_events_for, :in => EVENT_RETENTION_SCHEDULES.map(&:last)
   validate :sources_are_owned
   validate :validate_schedule
+  validate :validate_options
 
   after_initialize :set_default_schedule
   before_validation :set_default_schedule
@@ -83,22 +86,17 @@ class Agent < ActiveRecord::Base
     # Implement me in your subclass to test for valid options.
   end
 
-  def event_created_within(days)
-    event = most_recent_event
-    event && event.created_at > days.to_i.days.ago && event.payload.present? && event
+  def event_created_within?(days)
+    last_event_at && last_event_at > days.to_i.days.ago
   end
 
   def recent_error_logs?
-    most_recent_log.try(:level) == 4
+    last_event_at && last_error_log_at && last_error_log_at > (last_event_at - 2.minutes)
   end
 
   def create_event(attrs)
     if can_create_events?
-      events.create!({ 
-         :user => user, 
-         :expires_at => new_event_expiration_date, 
-         :propagate_immediately => propagate_immediately
-      }.merge(attrs))
+      events.create!({ :user => user, :expires_at => new_event_expiration_date }.merge(attrs))
     else
       error "This Agent cannot create events!"
     end
@@ -139,10 +137,6 @@ class Agent < ActiveRecord::Base
       self.last_webhook_at = Time.now
       save!
     end
-  end
-
-  def last_event_at
-    @memoized_last_event_at ||= most_recent_event.try(:created_at)
   end
 
   def default_schedule
@@ -217,15 +211,8 @@ class Agent < ActiveRecord::Base
     update_event_expirations! if keep_events_for_changed?
   end
 
-  def update_event_expirations!
-    if keep_events_for == 0
-      events.update_all :expires_at => nil
-    else
-      events.update_all "expires_at = DATE_ADD(`created_at`, INTERVAL #{keep_events_for.to_i} DAY)"
-    end
-  end
-
   # Class Methods
+
   class << self
     def cannot_be_scheduled!
       @cannot_be_scheduled = true
@@ -259,19 +246,14 @@ class Agent < ActiveRecord::Base
     # Find all Agents that have received Events since the last execution of this method.  Update those Agents with
     # their new `last_checked_event_id` and queue each of the Agents to be called with #receive using `async_receive`.
     # This is called by bin/schedule.rb periodically.
-    def receive!(options={})
+    def receive!
       Agent.transaction do
-        scope = Agent.
+        sql = Agent.
                 select("agents.id AS receiver_agent_id, sources.id AS source_agent_id, events.id AS event_id").
                 joins("JOIN links ON (links.receiver_id = agents.id)").
                 joins("JOIN agents AS sources ON (links.source_id = sources.id)").
                 joins("JOIN events ON (events.agent_id = sources.id AND events.id > links.event_id_at_creation)").
-                where("agents.last_checked_event_id IS NULL OR events.id > agents.last_checked_event_id")
-        if options[:only_receivers].present?
-          scope = scope.where("agents.id in (?)", options[:only_receivers])
-        end
- 
-        sql = scope.to_sql()
+                where("agents.last_checked_event_id IS NULL OR events.id > agents.last_checked_event_id").to_sql
 
         agents_to_events = {}
         Agent.connection.select_rows(sql).each do |receiver_agent_id, source_agent_id, event_id|

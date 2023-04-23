@@ -3,7 +3,6 @@ require "twitter"
 module Agents
   class TwitterPublishAgent < Agent
     include TwitterConcern
-
     cannot_be_scheduled!
 
     description <<-MD
@@ -63,7 +62,7 @@ module Agents
     end
 
     def publish_tweet(text)
-      twitter.update(text)
+      Twitter.update(text)
     end
   end
 end

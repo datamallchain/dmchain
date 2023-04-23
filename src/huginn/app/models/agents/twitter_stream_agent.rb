@@ -1,7 +1,6 @@
 module Agents
   class TwitterStreamAgent < Agent
     include TwitterConcern
-
     cannot_receive_events!
 
     description <<-MD

@@ -3,6 +3,7 @@ module TwitterConcern
 
   included do
     validate :validate_twitter_options
+    after_initialize :configure_twitter
   end
 
   def validate_twitter_options
@@ -30,12 +31,12 @@ module TwitterConcern
     options['oauth_token_secret'].presence || options['access_secret'].presence || credential('twitter_oauth_token_secret')
   end
 
-  def twitter
-    Twitter::REST::Client.new do |config|
+  def configure_twitter
+    Twitter.configure do |config|
       config.consumer_key = twitter_consumer_key
       config.consumer_secret = twitter_consumer_secret
-      config.access_token = twitter_oauth_token
-      config.access_token_secret = twitter_oauth_token_secret
+      config.oauth_token = twitter_oauth_token
+      config.oauth_token_secret = twitter_oauth_token_secret
     end
   end
 end
