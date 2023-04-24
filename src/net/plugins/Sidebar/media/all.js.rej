@@ -1,13 +1,14 @@
 diff a/src/net/plugins/Sidebar/media/all.js b/src/net/plugins/Sidebar/media/all.js	(rejected hunks)
-@@ -685,6 +685,11 @@ window.initScrollable = function () {
+@@ -691,9 +691,10 @@ window.initScrollable = function () {
            return false;
          };
        })(this));
-+      this.tag.find("#button-directory").off("click touchend").on("click touchend", (function(_this) {
-+        return function() {
-+          return _this.wrapper.ws.cmd("serverShowdirectory", ["site", _this.wrapper.site_info.address]);
-+        };
-+      })(this));
-       $(document).on("click touchend", (function(_this) {
+-      this.tag.find("#button-directory").off("click touchend").on("click touchend", (function(_this) {
++      this.tag.find("#link-directory").off("click touchend").on("click touchend", (function(_this) {
          return function() {
-           _this.tag.find("#button-sign-publish-menu").removeClass("visible");
+-          return _this.wrapper.ws.cmd("serverShowdirectory", ["site", _this.wrapper.site_info.address]);
++          _this.wrapper.ws.cmd("serverShowdirectory", ["site", _this.wrapper.site_info.address]);
++          return false;
+         };
+       })(this));
+       $(document).on("click touchend", (function(_this) {
