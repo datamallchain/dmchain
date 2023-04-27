@@ -1,5 +1,5 @@
 diff a/src/shaarli/index.php b/src/shaarli/index.php	(rejected hunks)
-@@ -2419,4 +2421,4 @@ function invalidateCaches()
+@@ -2440,4 +2440,4 @@ function invalidateCaches()
  if (isset($_SERVER["QUERY_STRING"]) && startswith($_SERVER["QUERY_STRING"],'ws=')) { processWS(); exit; } // Webservices (for jQuery/jQueryUI)
  if (!isset($_SESSION['LINKS_PER_PAGE'])) $_SESSION['LINKS_PER_PAGE']=$GLOBALS['config']['LINKS_PER_PAGE'];
  renderPage();
