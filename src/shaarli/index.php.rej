@@ -3,8 +3,8 @@ diff a/src/shaarli/index.php b/src/shaarli/index.php	(rejected hunks)
  
      // -------- User wants to see only untagged links (toggle)
      if (isset($_GET['untaggedonly'])) {
--        $_SESSION['untaggedonly'] = !$_SESSION['untaggedonly'];
-+        $_SESSION['untaggedonly'] = !empty($_SESSION['untaggedonly']);
+-        $_SESSION['untaggedonly'] = !empty($_SESSION['untaggedonly']);
++        $_SESSION['untaggedonly'] = empty($_SESSION['untaggedonly']);
  
          if (! empty($_SERVER['HTTP_REFERER'])) {
              $location = generateLocation($_SERVER['HTTP_REFERER'], $_SERVER['HTTP_HOST'], array('untaggedonly'));
