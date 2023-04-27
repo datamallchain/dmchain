@@ -1,8 +1,35 @@
 diff a/src/shaarli/index.php b/src/shaarli/index.php	(rejected hunks)
-@@ -2440,4 +2441,4 @@ function invalidateCaches()
- if (isset($_SERVER["QUERY_STRING"]) && startswith($_SERVER["QUERY_STRING"],'ws=')) { processWS(); exit; } // Webservices (for jQuery/jQueryUI)
- if (!isset($_SESSION['LINKS_PER_PAGE'])) $_SESSION['LINKS_PER_PAGE']=$GLOBALS['config']['LINKS_PER_PAGE'];
- renderPage();
--?>
-\ No newline at end of file
-+?>
+@@ -24,19 +24,19 @@
+ $GLOBALS['config']['ENABLE_THUMBNAILS'] = true; // Enable thumbnails in links.
+ $GLOBALS['config']['CACHEDIR'] = 'cache'; // Cache directory for thumbnails for SLOW services (like flickr)
+ $GLOBALS['config']['PAGECACHE'] = 'pagecache'; // Page cache directory.
+-$GLOBALS['config']['ENABLE_LOCALCACHE'] = true; // Enable Shaarli to store thumbnail in a local cache. Disable to reduce webspace usage.
++$GLOBALS['config']['ENABLE_LOCALCACHE'] = true; // Enable Shaarli to store thumbnail in a local cache. Disable to reduce web space usage.
+ $GLOBALS['config']['PUBSUBHUB_URL'] = ''; // PubSubHubbub support. Put an empty string to disable, or put your hub url here to enable.
+ $GLOBALS['config']['UPDATECHECK_FILENAME'] = $GLOBALS['config']['DATADIR'].'/lastupdatecheck.txt'; // For updates check of Shaarli.
+ $GLOBALS['config']['UPDATECHECK_INTERVAL'] = 86400 ; // Updates check frequency for Shaarli. 86400 seconds=24 hours
+                                           // Note: You must have publisher.php in the same directory as Shaarli index.php
+ // -----------------------------------------------------------------------------------------------
+-// You should not touch below (or at your own risks !)
+-// Optionnal config file.
++// You should not touch below (or at your own risks!)
++// Optional config file.
+ if (is_file($GLOBALS['config']['DATADIR'].'/options.php')) require($GLOBALS['config']['DATADIR'].'/options.php');
+ 
+ define('shaarli_version','0.0.42 beta');
+-define('PHPPREFIX','<?php /* '); // Prefix to encapsulate data in php code.
+-define('PHPSUFFIX',' */ ?>'); // Suffix to encapsulate data in php code.
++define('PHPPREFIX','<?php /* '); // Prefix to encapsulate data in PHP code.
++define('PHPSUFFIX',' */ ?>'); // Suffix to encapsulate data in PHP code.
+ // http://server.com/x/shaarli --> /shaarli/
+ define('WEB_PATH', substr($_SERVER["REQUEST_URI"], 0, 1+strrpos($_SERVER["REQUEST_URI"], '/', 0)));
+ 
+@@ -85,7 +85,7 @@ function stripslashes_deep($value) { $value = is_array($value) ? array_map('stri
+ header("Cache-Control: post-check=0, pre-check=0", false);
+ header("Pragma: no-cache");
+ 
+-// Directories creations (Note that your web host may require differents rights than 705.)
++// Directories creations (Note that your web host may require different rights than 705.)
+ if (!is_writable(realpath(dirname(__FILE__)))) die('<pre>ERROR: Shaarli does not have the right to write in its own directory ('.realpath(dirname(__FILE__)).').</pre>');
+ if (!is_dir($GLOBALS['config']['DATADIR'])) { mkdir($GLOBALS['config']['DATADIR'],0705); chmod($GLOBALS['config']['DATADIR'],0705); }
+ if (!is_dir('tmp')) { mkdir('tmp',0705); chmod('tmp',0705); } // For RainTPL temporary files.
