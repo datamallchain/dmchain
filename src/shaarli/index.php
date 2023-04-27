@@ -685,6 +685,7 @@ function showLinkList($PAGE, $LINKSDB, $conf, $pluginManager) {
  * @param ConfigManager $conf          Configuration Manager instance.
  * @param PluginManager $pluginManager Plugin Manager instance,
  * @param LinkDB        $LINKSDB
+ * @param History       $history       instance
  */
 function renderPage($conf, $pluginManager, $LINKSDB, $history)
 {
@@ -2245,6 +2246,12 @@ if (!isset($_SESSION['LINKS_PER_PAGE'])) {
     $_SESSION['LINKS_PER_PAGE'] = $conf->get('general.links_per_page', 20);
 }
 
+try {
+    $history = new History($conf->get('resource.history'));
+} catch(Exception $e) {
+    die($e->getMessage());
+}
+
 $linkDb = new LinkDB(
     $conf->get('resource.datastore'),
     isLoggedIn(),
@@ -2252,12 +2259,6 @@ $linkDb = new LinkDB(
     $conf->get('redirector.url'),
     $conf->get('redirector.encode_url')
 );
-
-try {
-    $history = new History($conf->get('resource.history'));
-} catch(Exception $e) {
-    die($e->getMessage());
-}
 
 $container = new \Slim\Container();
 $container['conf'] = $conf;
