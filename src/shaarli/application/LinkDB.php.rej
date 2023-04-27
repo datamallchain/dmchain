@@ -1,0 +1,54 @@
+diff a/src/shaarli/application/LinkDB.php b/src/shaarli/application/LinkDB.php	(rejected hunks)
+@@ -289,13 +289,15 @@ private function read()
+             return;
+         }
+ 
++        $this->urls = [];
++        $this->ids = [];
+         $this->links = FileUtils::readFlatDB($this->datastore, []);
+ 
+         $toremove = array();
+         foreach ($this->links as $key => &$link) {
+             if (! $this->loggedIn && $link['private'] != 0) {
+                 // Transition for not upgraded databases.
+-                $toremove[] = $key;
++                unset($this->links[$key]);
+                 continue;
+             }
+ 
+@@ -329,14 +331,10 @@ private function read()
+                 }
+                 $link['shorturl'] = smallHash($link['linkdate']);
+             }
+-        }
+ 
+-        // If user is not logged in, filter private links.
+-        foreach ($toremove as $offset) {
+-            unset($this->links[$offset]);
++            $this->urls[$link['url']] = $key;
++            $this->ids[$link['id']] = $key;
+         }
+-
+-        $this->reorder();
+     }
+ 
+     /**
+@@ -346,6 +344,7 @@ private function read()
+      */
+     private function write()
+     {
++        $this->reorder();
+         FileUtils::writeFlatDB($this->datastore, $this->links);
+     }
+ 
+@@ -528,8 +527,8 @@ public function reorder($order = 'DESC')
+             return $a['created'] < $b['created'] ? 1 * $order : -1 * $order;
+         });
+ 
+-        $this->urls = array();
+-        $this->ids = array();
++        $this->urls = [];
++        $this->ids = [];
+         foreach ($this->links as $key => $link) {
+             $this->urls[$link['url']] = $key;
+             $this->ids[$link['id']] = $key;

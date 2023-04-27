@@ -1,0 +1,16 @@
+diff a/src/shaarli/application/Updater.php b/src/shaarli/application/Updater.php	(rejected hunks)
+@@ -436,6 +436,14 @@ public function updateMethodResetHistoryFile()
+         }
+         return true;
+     }
++
++    /**
++     * Save the datastore -> the link order is now applied when links are saved.
++     */
++    public function updateMethodReorderDatastore()
++    {
++        $this->linkDB->save($this->conf->get('resource.page_cache'));
++    }
+ }
+ 
+ /**
