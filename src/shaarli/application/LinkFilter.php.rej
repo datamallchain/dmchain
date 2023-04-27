@@ -1,0 +1,42 @@
+diff a/src/shaarli/application/LinkFilter.php b/src/shaarli/application/LinkFilter.php	(rejected hunks)
+@@ -263,20 +308,32 @@ private function filterFulltext($searchterms, $visibility = 'all')
+      */
+     public function filterTags($tags, $casesensitive = false, $visibility = 'all')
+     {
+-        // Implode if array for clean up.
+-        $tags = is_array($tags) ? trim(implode(' ', $tags)) : $tags;
+-        if (empty($tags)) {
++        // get single tags (we may get passed an array, even though the docs say different)
++        $inputTags = $tags;
++        if(!is_array($tags)) {
++            // we got an input string, split tags
++            $inputTags = preg_split('/(?:\s+)|,/', $inputTags, -1, PREG_SPLIT_NO_EMPTY);
++        }
++
++        if(!count($inputTags)){
++            // no input tags
+             return $this->noFilter($visibility);
+         }
+ 
+-        $searchtags = self::tagsStrToArray($tags, $casesensitive);
+-        $filtered = array();
+-        if (empty($searchtags)) {
+-            return $filtered;
++        // build regex from all tags
++        $re = '/^' . implode(array_map("self::tag2regex", $inputTags)) . '.*$/';
++        if(!$casesensitive) {
++            // make regex case insensitive
++            $re .= 'i';
+         }
+ 
++        // create resulting array
++        $filtered = array();
++
++        // iterate over each link
+         foreach ($this->links as $key => $link) {
+-            // ignore non private links when 'privatonly' is on.
++            // check level of visibility
++            // ignore non private links when 'privateonly' is on.
+             if ($visibility !== 'all') {
+                 if (! $link['private'] && $visibility === 'private') {
+                     continue;

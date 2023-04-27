@@ -238,6 +238,51 @@ class LinkFilter
     }
 
     /**
+     * generate a regex fragment out of a tag
+     * @param string $tag to to generate regexs from. may start with '-' to negate, contain '*' as wildcard
+     * @return string generated regex fragment
+     */
+    private static function tag2regex($tag)
+    {
+        $len = strlen($tag);
+        if(!$len || $tag === "-" || $tag === "*"){
+            // nothing to search, return empty regex
+            return '';
+        }
+        if($tag[0] === "-") {
+            // query is negated
+            $i = 1; // use offset to start after '-' character
+            $regex = '(?!'; // create negative lookahead
+        } else {
+            $i = 0; // start at first character
+            $regex = '(?='; // use positive lookahead
+        }
+        $regex .= '.*(?:^| )'; // before tag may only be a space or the beginning
+        // iterate over string, separating it into placeholder and content
+        for(; $i < $len; $i++){
+            if($tag[$i] === '*'){
+                // placeholder found
+                $regex .= '[^ ]*?';
+            } else {
+                // regular characters
+                $offset = strpos($tag, '*', $i);
+                if($offset === false){
+                    // no placeholder found, set offset to end of string
+                    $offset = $len;
+                }
+                // subtract one, as we want to get before the placeholder or end of string
+                $offset -= 1;
+                // we got a tag name that we want to search for. escape any regex characters to prevent conflicts.
+                $regex .= preg_quote(substr($tag, $i, $offset - $i + 1), '/');
+                // move $i on
+                $i = $offset;
+            }
+        }
+        $regex .= '(?:$| ))'; // after the tag may only be a space or the end
+        return $regex;
+    }
+
+    /**
      * Returns the list of links associated with a given list of tags
      *
      * You can specify one or more tags, separated by space or a comma, e.g.
@@ -275,25 +320,27 @@ class LinkFilter
                     continue;
                 }
             }
-
-            $linktags = self::tagsStrToArray($link['tags'], $casesensitive);
-
-            $found = true;
-            for ($i = 0 ; $i < count($searchtags) && $found; $i++) {
-                // Exclusive search, quit if tag found.
-                // Or, tag not found in the link, quit.
-                if (($searchtags[$i][0] == '-'
-                        && $this->searchTagAndHashTag(substr($searchtags[$i], 1), $linktags, $link['description']))
-                    || ($searchtags[$i][0] != '-')
-                        && ! $this->searchTagAndHashTag($searchtags[$i], $linktags, $link['description'])
-                ) {
-                    $found = false;
+            $search = $link['tags']; // build search string, start with tags of current link
+            if(strlen(trim($link['description'])) && strpos($link['description'], '#') !== false){
+                // description given and at least one possible tag found
+                $descTags = array();
+                // find all tags in the form of #tag in the description
+                preg_match_all(
+                    '/(?<![' . self::$HASHTAG_CHARS . '])#([' . self::$HASHTAG_CHARS . ']+?)\b/sm',
+                    $link['description'],
+                    $descTags
+                );
+                if(count($descTags[1])){
+                    // there were some tags in the description, add them to the search string
+                    $search .= ' ' . implode(' ', $descTags[1]);
                 }
+            };
+            // match regular expression with search string
+            if(!preg_match($re, $search)){
+                // this entry does _not_ match our regex
+                continue;
             }
-
-            if ($found) {
-                $filtered[$key] = $link;
-            }
+            $filtered[$key] = $link;
         }
         return $filtered;
     }
@@ -352,28 +399,6 @@ class LinkFilter
 
         // sort by date ASC
         return array_reverse($filtered, true);
-    }
-
-    /**
-     * Check if a tag is found in the taglist, or as an hashtag in the link description.
-     *
-     * @param string $tag         Tag to search.
-     * @param array  $taglist     List of tags for the current link.
-     * @param string $description Link description.
-     *
-     * @return bool True if found, false otherwise.
-     */
-    protected function searchTagAndHashTag($tag, $taglist, $description)
-    {
-        if (in_array($tag, $taglist)) {
-            return true;
-        }
-
-        if (preg_match('/(^| )#'. $tag .'([^'. self::$HASHTAG_CHARS .']|$)/mui', $description) > 0) {
-            return true;
-        }
-
-        return false;
     }
 
     /**
