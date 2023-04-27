@@ -1,12 +1,9 @@
 diff a/src/shaarli/index.php b/src/shaarli/index.php	(rejected hunks)
-@@ -26,8 +26,8 @@
- $GLOBALS['config']['PAGECACHE'] = 'pagecache'; // Page cache directory.
- $GLOBALS['config']['ENABLE_LOCALCACHE'] = true; // Enable Shaarli to store thumbnail in a local cache. Disable to reduce web space usage.
- $GLOBALS['config']['PUBSUBHUB_URL'] = ''; // PubSubHubbub support. Put an empty string to disable, or put your hub url here to enable.
--$GLOBALS['config']['RAINTPL_TMP'] = 'tmp' ; // Raintpl cache directory
--$GLOBALS['config']['RAINTPL_TPL'] = 'tpl/' ; // Raintpl template directory (keep the trailling slash!)
-+$GLOBALS['config']['RAINTPL_TMP'] = 'tmp/' ; // Raintpl cache directory  (keep the trailing slash!)
-+$GLOBALS['config']['RAINTPL_TPL'] = 'tpl/' ; // Raintpl template directory (keep the trailing slash!)
+@@ -32,6 +32,7 @@
  $GLOBALS['config']['UPDATECHECK_FILENAME'] = $GLOBALS['config']['DATADIR'].'/lastupdatecheck.txt'; // For updates check of Shaarli.
  $GLOBALS['config']['UPDATECHECK_INTERVAL'] = 86400 ; // Updates check frequency for Shaarli. 86400 seconds=24 hours
                                            // Note: You must have publisher.php in the same directory as Shaarli index.php
++$GLOBALS['config']['ARCHIVE_ORG'] = false; // For each link, add a link to an archived version on archive.org
+ // -----------------------------------------------------------------------------------------------
+ // You should not touch below (or at your own risks!)
+ // Optional config file.
