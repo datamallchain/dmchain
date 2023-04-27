@@ -802,7 +802,7 @@ function renderPage($conf, $pluginManager, $LINKSDB, $history)
             $maxcount = max($maxcount, $value);
         }
 
-        alphabetical_sort($tags, true, true);
+        alphabetical_sort($tags, false, true);
 
         $tagList = array();
         foreach($tags as $key => $value) {
