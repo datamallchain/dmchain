@@ -1,9 +1,10 @@
 diff a/src/shaarli/index.php b/src/shaarli/index.php	(rejected hunks)
-@@ -32,6 +32,7 @@
- $GLOBALS['config']['UPDATECHECK_FILENAME'] = $GLOBALS['config']['DATADIR'].'/lastupdatecheck.txt'; // For updates check of Shaarli.
- $GLOBALS['config']['UPDATECHECK_INTERVAL'] = 86400 ; // Updates check frequency for Shaarli. 86400 seconds=24 hours
-                                           // Note: You must have publisher.php in the same directory as Shaarli index.php
-+$GLOBALS['config']['ARCHIVE_ORG'] = false; // For each link, add a link to an archived version on archive.org
- // -----------------------------------------------------------------------------------------------
- // You should not touch below (or at your own risks!)
- // Optional config file.
+@@ -89,7 +89,7 @@ function stripslashes_deep($value) { $value = is_array($value) ? array_map('stri
+ header("Pragma: no-cache");
+ 
+ // Directories creations (Note that your web host may require different rights than 705.)
+-if (!is_writable(realpath(dirname(__FILE__)))) die('<pre>ERROR: Shaarli does not have the right to write in its own directory ('.realpath(dirname(__FILE__)).').</pre>');
++if (!is_writable(realpath(dirname(__FILE__)))) die('<pre>ERROR: Shaarli does not have the right to write in its own directory.').</pre>');
+ 
+ // Handling of old config file which do not have the new parameters.
+ if (empty($GLOBALS['title'])) $GLOBALS['title']='Shared links on '.htmlspecialchars(indexUrl());
