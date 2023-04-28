@@ -1156,6 +1156,8 @@ function renderPage($conf, $pluginManager, $LINKSDB, $history)
             $conf->set('privacy.hide_public_links', !empty($_POST['hidePublicLinks']));
             $conf->set('api.enabled', !empty($_POST['enableApi']));
             $conf->set('api.secret', escape($_POST['apiSecret']));
+            $conf->set('translation.language', escape($_POST['language']));
+
             try {
                 $conf->write(isLoggedIn());
                 $history->updateSettings();
@@ -1193,6 +1195,8 @@ function renderPage($conf, $pluginManager, $LINKSDB, $history)
             $PAGE->assign('hide_public_links', $conf->get('privacy.hide_public_links', false));
             $PAGE->assign('api_enabled', $conf->get('api.enabled', true));
             $PAGE->assign('api_secret', $conf->get('api.secret'));
+            $PAGE->assign('languages', Languages::getAvailableLanguages());
+            $PAGE->assign('language', $conf->get('translation.language'));
             $PAGE->renderPage('configure');
             exit;
         }
@@ -1459,7 +1463,7 @@ function renderPage($conf, $pluginManager, $LINKSDB, $history)
 
             if ($url == '') {
                 $url = '?' . smallHash($linkdate . $LINKSDB->getNextId());
-                $title = $conf->get('general.default_note_title', 'Note: ');
+                $title = $conf->get('general.default_note_title', t('Note: '));
             }
             $url = escape($url);
             $title = escape($title);
@@ -2027,6 +2031,7 @@ function install($conf)
         } else {
             $conf->set('general.title', 'Shared links on '.escape(index_url($_SERVER)));
         }
+        $conf->set('translation.language', escape($_POST['language']));
         $conf->set('updates.check_updates', !empty($_POST['updateCheck']));
         $conf->set('api.enabled', !empty($_POST['enableApi']));
         $conf->set(
@@ -2058,6 +2063,7 @@ function install($conf)
     list($continents, $cities) = generateTimeZoneData(timezone_identifiers_list(), date_default_timezone_get());
     $PAGE->assign('continents', $continents);
     $PAGE->assign('cities', $cities);
+    $PAGE->assign('languages', Languages::getAvailableLanguages());
     $PAGE->renderPage('install');
     exit;
 }
