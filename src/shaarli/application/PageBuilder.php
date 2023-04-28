@@ -32,12 +32,14 @@ class PageBuilder
      *
      * @param ConfigManager $conf   Configuration Manager instance (reference).
      * @param LinkDB        $linkDB instance.
+     * @param string        $token  Session token
      */
-    public function __construct(&$conf, $linkDB = null)
+    public function __construct(&$conf, $linkDB = null, $token = null)
     {
         $this->tpl = false;
         $this->conf = $conf;
         $this->linkDB = $linkDB;
+        $this->token = $token;
     }
 
     /**
