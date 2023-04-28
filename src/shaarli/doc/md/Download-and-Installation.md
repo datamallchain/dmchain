@@ -91,7 +91,7 @@ Install [Composer](Unit-tests.md#install_composer) to manage Shaarli dependencie
 To get the latest changes from the `master` branch:
 
 ```bash
-# clone the repository  
+# clone the repository
 $ git clone https://github.com/shaarli/Shaarli.git -b master /path/to/shaarli/
 # install/update third-party dependencies
 $ cd /path/to/shaarli
