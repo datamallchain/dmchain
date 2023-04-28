@@ -68,9 +68,9 @@ $ tar xvf stable.tar.gz
 $ mv Shaarli-stable /path/to/shaarli/
 ```
 
-### Clone with Git 
+### Using git
 
-[Composer](https://getcomposer.org/) is required to build a functional Shaarli installation when pulling from git.
+Install [Composer](Unit-tests.md#install_composer) to manage Shaarli dependencies.
 
 ```bash
 $ git clone https://github.com/shaarli/Shaarli.git -b stable /path/to/shaarli/
@@ -79,9 +79,14 @@ $ cd /path/to/shaarli/
 $ composer install --no-dev --prefer-dist
 ```
 
+
+--------------------------------------------------------------------------------
+
 ## Development version (mainline)
 
 _Use at your own risk!_
+
+Install [Composer](Unit-tests.md#install_composer) to manage Shaarli dependencies.
 
 To get the latest changes from the `master` branch:
 
@@ -92,7 +97,10 @@ $ git clone https://github.com/shaarli/Shaarli.git -b master /path/to/shaarli/
 $ cd /path/to/shaarli
 $ composer install --no-dev --prefer-dist
 $ make translate
+$ make htmldoc
 ```
+
+-------------------------------------------------------------------------------
 
 ## Finish Installation
 
