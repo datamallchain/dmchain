@@ -68,6 +68,10 @@ checkphpversion();
 error_reporting(E_ALL^E_WARNING);  // See all error except warnings.
 //error_reporting(-1); // See all errors (for debugging only)
 
+// Shaarli library
+require_once 'application/LinkDB.php';
+require_once 'application/Utils.php';
+
 include "inc/rain.tpl.class.php"; //include Rain TPL
 raintpl::$tpl_dir = $GLOBALS['config']['RAINTPL_TPL']; // template directory
 raintpl::$cache_dir = $GLOBALS['config']['RAINTPL_TMP']; // cache directory
@@ -266,21 +270,6 @@ function logm($message)
 function nl2br_escaped($html)
 {
     return str_replace('>','&gt;',str_replace('<','&lt;',nl2br($html)));
-}
-
-/* Returns the small hash of a string, using RFC 4648 base64url format
-   e.g. smallHash('20111006_131924') --> yZH23w
-   Small hashes:
-     - are unique (well, as unique as crc32, at last)
-     - are always 6 characters long.
-     - only use the following characters: a-z A-Z 0-9 - _ @
-     - are NOT cryptographically secure (they CAN be forged)
-   In Shaarli, they are used as a tinyurl-like link to individual entries.
-*/
-function smallHash($text)
-{
-    $t = rtrim(base64_encode(hash('crc32',$text,true)),'=');
-    return strtr($t, '+/', '-_');
 }
 
 // In a string, converts URLs to clickable links.
@@ -534,20 +523,6 @@ function getMaxFileSize()
     $maxsize = min($size1,$size2);
     // FIXME: Then convert back to readable notations ? (e.g. 2M instead of 2000000)
     return $maxsize;
-}
-
-// Tells if a string start with a substring or not.
-function startsWith($haystack,$needle,$case=true)
-{
-    if($case){return (strcmp(substr($haystack, 0, strlen($needle)),$needle)===0);}
-    return (strcasecmp(substr($haystack, 0, strlen($needle)),$needle)===0);
-}
-
-// Tells if a string ends with a substring or not.
-function endsWith($haystack,$needle,$case=true)
-{
-    if($case){return (strcmp(substr($haystack, strlen($haystack) - strlen($needle)),$needle)===0);}
-    return (strcasecmp(substr($haystack, strlen($haystack) - strlen($needle)),$needle)===0);
 }
 
 /*  Converts a linkdate time (YYYYMMDD_HHMMSS) of an article to a timestamp (Unix epoch)
@@ -947,7 +922,7 @@ function showRSS()
     $cached = $cache->cachedVersion(); if (!empty($cached)) { echo $cached; exit; }
 
     // If cached was not found (or not usable), then read the database and build the response:
-    $LINKSDB=new linkdb(isLoggedIn() || $GLOBALS['config']['OPEN_SHAARLI']);  // Read links from database (and filter private links if user it not logged in).
+    $LINKSDB = new LinkDB(isLoggedIn() || $GLOBALS['config']['OPEN_SHAARLI']);
 
     // Optionally filter the results:
     $linksToDisplay=array();
@@ -1022,7 +997,7 @@ function showATOM()
     $cached = $cache->cachedVersion(); if (!empty($cached)) { echo $cached; exit; }
     // If cached was not found (or not usable), then read the database and build the response:
 
-    $LINKSDB=new linkdb(isLoggedIn() || $GLOBALS['config']['OPEN_SHAARLI']);  // Read links from database (and filter private links if used it not logged in).
+    $LINKSDB = new LinkDB(isLoggedIn() || $GLOBALS['config']['OPEN_SHAARLI']);
 
 
     // Optionally filter the results:
@@ -1104,7 +1079,7 @@ function showDailyRSS()
     $cache = new pageCache(pageUrl(),startsWith($query,'do=dailyrss') && !isLoggedIn());
     $cached = $cache->cachedVersion(); if (!empty($cached)) { echo $cached; exit; }
     // If cached was not found (or not usable), then read the database and build the response:
-    $LINKSDB=new linkdb(isLoggedIn() || $GLOBALS['config']['OPEN_SHAARLI']);  // Read links from database (and filter private links if used it not logged in).
+    $LINKSDB = new LinkDB(isLoggedIn() || $GLOBALS['config']['OPEN_SHAARLI']);
 
     /* Some Shaarlies may have very few links, so we need to look
        back in time (rsort()) until we have enough days ($nb_of_days).
@@ -1172,7 +1147,7 @@ function showDailyRSS()
 // "Daily" page.
 function showDaily()
 {
-    $LINKSDB=new linkdb(isLoggedIn() || $GLOBALS['config']['OPEN_SHAARLI']);  // Read links from database (and filter private links if used it not logged in).
+    $LINKSDB = new LinkDB(isLoggedIn() || $GLOBALS['config']['OPEN_SHAARLI']);
 
 
     $day=Date('Ymd',strtotime('-1 day')); // Yesterday, in format YYYYMMDD.
@@ -1239,7 +1214,7 @@ function showDaily()
 // Render HTML page (according to URL parameters and user rights)
 function renderPage()
 {
-    $LINKSDB=new linkdb(isLoggedIn() || $GLOBALS['config']['OPEN_SHAARLI']);  // Read links from database (and filter private links if used it not logged in).
+    $LINKSDB = new LinkDB(isLoggedIn() || $GLOBALS['config']['OPEN_SHAARLI']);
 
     // -------- Display login form.
     if (isset($_SERVER["QUERY_STRING"]) && startswith($_SERVER["QUERY_STRING"],'do=login'))
@@ -1817,7 +1792,7 @@ HTML;
 function importFile()
 {
     if (!(isLoggedIn() || $GLOBALS['config']['OPEN_SHAARLI'])) { die('Not allowed.'); }
-    $LINKSDB=new linkdb(isLoggedIn() || $GLOBALS['config']['OPEN_SHAARLI']);  // Read links from database (and filter private links if used it not logged in).
+    $LINKSDB = new LinkDB(isLoggedIn() || $GLOBALS['config']['OPEN_SHAARLI']);
     $filename=$_FILES['filetoupload']['name'];
     $filesize=$_FILES['filetoupload']['size'];
     $data=file_get_contents($_FILES['filetoupload']['tmp_name']);
