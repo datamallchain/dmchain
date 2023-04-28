@@ -435,7 +435,7 @@ if (isset($_POST['login']))
     else
     {
         ban_loginFailed($conf);
-        $redir = '&username='. $_POST['login'];
+        $redir = '&username='. urlencode($_POST['login']);
         if (isset($_GET['post'])) {
             $redir .= '&post=' . urlencode($_GET['post']);
             foreach (array('description', 'source', 'title', 'tags') as $param) {
