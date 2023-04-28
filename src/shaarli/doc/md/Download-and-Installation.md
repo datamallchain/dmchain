@@ -91,13 +91,14 @@ $ git clone https://github.com/shaarli/Shaarli.git -b master /path/to/shaarli/
 # install/update third-party dependencies
 $ cd /path/to/shaarli
 $ composer install --no-dev --prefer-dist
+$ make translate
 ```
 
 ## Finish Installation
 
 Once Shaarli is downloaded and files have been placed at the correct location, open it this location your favorite browser.
 
-![install screenshot](http://i.imgur.com/wuMpDSN.png)
+![install screenshot](images/install-shaarli.png)
 
 Setup your Shaarli installation, and it's ready to use!
 

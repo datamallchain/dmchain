@@ -1,0 +1,9 @@
+diff a/src/shaarli/doc/md/Download-and-Installation.md b/src/shaarli/doc/md/Download-and-Installation.md	(rejected hunks)
+@@ -36,6 +36,7 @@ In most cases, download Shaarli from the [releases](https://github.com/shaarli/S
+ $ mkdir -p /path/to/shaarli && cd /path/to/shaarli/
+ $ git clone -b v0.9 https://github.com/shaarli/Shaarli.git .
+ $ composer install --no-dev --prefer-dist
++$ make translate
+ ```
+ 
+ ## Stable version
