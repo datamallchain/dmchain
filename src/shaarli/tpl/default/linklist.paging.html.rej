@@ -1,10 +1,12 @@
 diff a/src/shaarli/tpl/default/linklist.paging.html b/src/shaarli/tpl/default/linklist.paging.html	(rejected hunks)
-@@ -13,7 +13,7 @@
+@@ -6,8 +6,8 @@
+           {'Filters'|t}
+         </span>
+         {if="isLoggedIn()"}
+-        <a href="?privateonly" title="{'Filter private links'|t}"
+-           class={if="$privateonly"}"filter-on"{else}"filter-off"{/if}
++        <a href="?visibility={$nextVisibility}" title="{'Filter links by visibility'|t}"
++           class="{if="$visibility=='private'"}filter-on{elseif="$visibility=='public'"}filter-block{else}filter-off{/if}"
+         ><i class="fa fa-key"></i></a>
+         {/if}
          <a href="?untaggedonly" title="{'Filter untagged links'|t}"
-            class={if="$untaggedonly"}"filter-on"{else}"filter-off"{/if}
-         ><i class="fa fa-tag"></i></a>
--        <a href="#" class="filter-off fold-all pure-u-lg-0" title="Fold all">
-+        <a href="#" class="filter-off fold-all pure-u-lg-0" title="{'Fold all'|t}">
-           <i class="fa fa-chevron-up"></i>
-         </a>
-         {loop="$action_plugin"}

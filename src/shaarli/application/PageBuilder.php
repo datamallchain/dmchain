@@ -164,4 +164,24 @@ class PageBuilder
         $this->tpl->assign('error_message', $message);
         $this->renderPage('404');
     }
+
+    /**
+     * Return the next visibility option:
+     *      private -> public -> all
+     *
+     * @param string $current visibility value
+     *
+     * @return string next visibility value
+     */
+    protected function getNextVisibility($current)
+    {
+        switch ($current) {
+            case 'private':
+                return 'public';
+            case 'public':
+                return '';
+            default:
+                return 'private';
+        }
+    }
 }

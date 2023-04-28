@@ -1,10 +1,12 @@
 diff a/src/shaarli/application/PageBuilder.php b/src/shaarli/application/PageBuilder.php	(rejected hunks)
-@@ -92,7 +94,7 @@ private function initialize()
-         $this->tpl->assign('showatom', $this->conf->get('feed.show_atom', true));
-         $this->tpl->assign('feed_type', $this->conf->get('feed.show_atom', true) !== false ? 'atom' : 'rss');
-         $this->tpl->assign('hide_timestamps', $this->conf->get('privacy.hide_timestamps', false));
--        $this->tpl->assign('token', getToken($this->conf));
-+        $this->tpl->assign('token', $this->token);
- 
-         if ($this->linkDB !== null) {
-             $this->tpl->assign('tags', $this->linkDB->linksCountPerTag());
+@@ -83,7 +83,9 @@ private function initialize()
+             ApplicationUtils::getVersionHash(SHAARLI_VERSION, $this->conf->get('credentials.salt'))
+         );
+         $this->tpl->assign('scripturl', index_url($_SERVER));
+-        $this->tpl->assign('privateonly', !empty($_SESSION['privateonly'])); // Show only private links?
++        $visibility = ! empty($_SESSION['visibility']) ? $_SESSION['visibility'] : '';
++        $this->tpl->assign('visibility', $visibility);
++        $this->tpl->assign('nextVisibility', $this->getNextVisibility($visibility));
+         $this->tpl->assign('untaggedonly', !empty($_SESSION['untaggedonly']));
+         $this->tpl->assign('pagetitle', $this->conf->get('general.title', 'Shaarli'));
+         if ($this->conf->exists('general.header_link')) {
