@@ -41,8 +41,6 @@ $GLOBALS['config']['HIDE_PUBLIC_LINKS'] = false;
 if (is_file($GLOBALS['config']['DATADIR'].'/options.php')) require($GLOBALS['config']['DATADIR'].'/options.php');
 
 define('shaarli_version','0.0.45beta');
-define('PHPPREFIX','<?php /* '); // Prefix to encapsulate data in PHP code.
-define('PHPSUFFIX',' */ ?>'); // Suffix to encapsulate data in PHP code.
 // http://server.com/x/shaarli --> /shaarli/
 define('WEB_PATH', substr($_SERVER["REQUEST_URI"], 0, 1+strrpos($_SERVER["REQUEST_URI"], '/', 0)));
 

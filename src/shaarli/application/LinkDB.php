@@ -27,6 +27,15 @@
  */
 class LinkDB implements Iterator, Countable, ArrayAccess
 {
+    // Links are stored as a PHP serialized string
+    private $datastore;
+
+    // Datastore PHP prefix
+    protected static $phpPrefix = '<?php /* ';
+
+    // Datastore PHP suffix
+    protected static $phpSuffix = ' */ ?>';
+
     // List of links (associative array)
     //  - key:   link date (e.g. "20110823_124546"),
     //  - value: associative array (keys: title, description...)
@@ -55,9 +64,9 @@ class LinkDB implements Iterator, Countable, ArrayAccess
      *
      * @param $isLoggedIn is the user logged in?
      */
-    function __construct($isLoggedIn, $hidePublicLinks)
+    function __construct($datastore, $isLoggedIn, $hidePublicLinks)
     {
-        // FIXME: do not access $GLOBALS, pass the datastore instead
+        $this->datastore = $datastore;
         $this->loggedIn = $isLoggedIn;
         $this->hidePublicLinks = $hidePublicLinks;
         $this->checkDB();
@@ -172,7 +181,7 @@ class LinkDB implements Iterator, Countable, ArrayAccess
      */
     private function checkDB()
     {
-        if (file_exists($GLOBALS['config']['DATASTORE'])) {
+        if (file_exists($this->datastore)) {
             return;
         }
 
@@ -205,9 +214,8 @@ You use the community supported version of the original Shaarli project, by Seba
         // Write database to disk
         // TODO: raise an exception if the file is not write-able
         file_put_contents(
-            // FIXME: do not use $GLOBALS
-            $GLOBALS['config']['DATASTORE'],
-            PHPPREFIX.base64_encode(gzdeflate(serialize($this->links))).PHPSUFFIX
+            $this->datastore,
+            self::$phpPrefix.base64_encode(gzdeflate(serialize($this->links))).self::$phpSuffix
         );
     }
 
@@ -226,13 +234,12 @@ You use the community supported version of the original Shaarli project, by Seba
         // Read data
         // Note that gzinflate is faster than gzuncompress.
         // See: http://www.php.net/manual/en/function.gzdeflate.php#96439
-        // FIXME: do not use $GLOBALS
         $this->links = array();
 
-        if (file_exists($GLOBALS['config']['DATASTORE'])) {
+        if (file_exists($this->datastore)) {
             $this->links = unserialize(gzinflate(base64_decode(
-                substr(file_get_contents($GLOBALS['config']['DATASTORE']),
-                       strlen(PHPPREFIX), -strlen(PHPSUFFIX)))));
+                substr(file_get_contents($this->datastore),
+                       strlen(self::$phpPrefix), -strlen(self::$phpSuffix)))));
         }
 
         // If user is not logged in, filter private links.
@@ -270,8 +277,8 @@ You use the community supported version of the original Shaarli project, by Seba
             die('You are not authorized to change the database.');
         }
         file_put_contents(
-            $GLOBALS['config']['DATASTORE'],
-            PHPPREFIX.base64_encode(gzdeflate(serialize($this->links))).PHPSUFFIX
+            $this->datastore,
+            self::$phpPrefix.base64_encode(gzdeflate(serialize($this->links))).self::$phpSuffix
         );
         invalidateCaches();
     }
