@@ -1,0 +1,26 @@
+diff a/src/shaarli/.travis.yml b/src/shaarli/.travis.yml	(rejected hunks)
+@@ -2,20 +2,22 @@ sudo: false
+ dist: trusty
+ language: php
+ cache:
++  yarn: true
+   directories:
+     - $HOME/.composer/cache
++    - $HOME/.cache/yarn
+ php:
+   - 7.2
+   - 7.1
+   - 7.0
+   - 5.6
+ install:
+-  - composer self-update
++  - yarn install
+   - composer install --prefer-dist
+-  - locale -a
+ before_script:
+   - PATH=${PATH//:\.\/node_modules\/\.bin/}
+ script:
+   - make clean
+   - make check_permissions
++  - make eslint
+   - make all_tests
