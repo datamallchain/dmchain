@@ -1,5 +1,5 @@
 diff a/src/shaarli/index.php b/src/shaarli/index.php	(rejected hunks)
-@@ -709,7 +706,7 @@ function showRSS()
+@@ -709,7 +709,7 @@ function showRSS()
      if (!empty($_GET['searchterm'])) $linksToDisplay = $LINKSDB->filterFulltext($_GET['searchterm']);
      else if (!empty($_GET['searchtags']))   $linksToDisplay = $LINKSDB->filterTags(trim($_GET['searchtags']));
      else $linksToDisplay = $LINKSDB;
@@ -8,7 +8,7 @@ diff a/src/shaarli/index.php b/src/shaarli/index.php	(rejected hunks)
      $nblinksToDisplay = 50;  // Number of links to display.
      if (!empty($_GET['nb']))  // In URL, you can specificy the number of links. Example: nb=200 or nb=all for all links.
      {
-@@ -789,7 +786,7 @@ function showATOM()
+@@ -789,7 +789,7 @@ function showATOM()
      if (!empty($_GET['searchterm'])) $linksToDisplay = $LINKSDB->filterFulltext($_GET['searchterm']);
      else if (!empty($_GET['searchtags']))   $linksToDisplay = $LINKSDB->filterTags(trim($_GET['searchtags']));
      else $linksToDisplay = $LINKSDB;
@@ -17,7 +17,7 @@ diff a/src/shaarli/index.php b/src/shaarli/index.php	(rejected hunks)
      $nblinksToDisplay = 50;  // Number of links to display.
      if (!empty($_GET['nb']))  // In URL, you can specificy the number of links. Example: nb=200 or nb=all for all links.
      {
-@@ -1041,7 +1038,7 @@ function renderPage()
+@@ -1041,7 +1041,7 @@ function renderPage()
          if (!empty($_GET['searchterm'])) $links = $LINKSDB->filterFulltext($_GET['searchterm']);
          elseif (!empty($_GET['searchtags']))   $links = $LINKSDB->filterTags(trim($_GET['searchtags']));
          else $links = $LINKSDB;
@@ -26,7 +26,7 @@ diff a/src/shaarli/index.php b/src/shaarli/index.php	(rejected hunks)
          $body='';
          $linksToDisplay=array();
  
-@@ -1056,7 +1053,7 @@ function renderPage()
+@@ -1056,7 +1056,7 @@ function renderPage()
                  $linksToDisplay[]=$link; // Add to array.
              }
          }
