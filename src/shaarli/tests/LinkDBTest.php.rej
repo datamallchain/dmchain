@@ -1,10 +1,22 @@
 diff a/src/shaarli/tests/LinkDBTest.php b/src/shaarli/tests/LinkDBTest.php	(rejected hunks)
-@@ -126,7 +120,7 @@ public function testCheckDBNew()
-      */
+@@ -121,17 +117,15 @@ public function testCheckDBNew()
      public function testCheckDBLoad()
      {
--        $linkDB = new LinkDB(false, false);
-+        $linkDB = new LinkDB(self::$testDatastore, false, false);
+         $linkDB = new LinkDB(self::$testDatastore, false, false);
+-        $this->assertEquals(
+-            self::$dummyDatastoreFilesize,
+-            filesize(self::$testDatastore)
+-        );
++        $datastoreSize = filesize(self::$testDatastore);
++        $this->assertGreaterThan(0, $datastoreSize);
+ 
+         $checkDB = self::getMethod('checkDB');
+         $checkDB->invokeArgs($linkDB, array());
+ 
+         // ensure the datastore is left unmodified
          $this->assertEquals(
-             self::$dummyDatastoreSHA1,
-             sha1_file(self::$testDatastore)
+-            self::$dummyDatastoreFilesize,
++            $datastoreSize,
+             filesize(self::$testDatastore)
+         );
+     }
