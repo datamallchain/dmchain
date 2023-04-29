@@ -1,0 +1,10 @@
+diff a/src/shaarli/docker/alpine/Dockerfile.master b/src/shaarli/docker/alpine/Dockerfile.master	(rejected hunks)
+@@ -40,7 +49,7 @@ RUN rm -rf /etc/php7/php-fpm.d/www.conf \
+ 
+ 
+ WORKDIR /var/www
+-COPY --from=composer /app/shaarli shaarli
++COPY --from=node /shaarli shaarli
+ 
+ RUN chown -R nginx:nginx . \
+     && ln -sf /dev/stdout /var/log/nginx/shaarli.access.log \

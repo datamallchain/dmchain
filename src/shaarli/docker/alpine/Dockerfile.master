@@ -8,6 +8,15 @@ RUN curl -L https://github.com/shaarli/Shaarli/archive/master.tar.gz | tar xzf -
     && composer --prefer-dist --no-dev install
 
 # Stage 2:
+# - Frontend dependencies
+FROM node:9.9-alpine as node
+COPY --from=composer /app/shaarli shaarli
+RUN cd shaarli \
+    && yarn install \
+    && yarn run build \
+    && rm -rf node_modules
+
+# Stage 3:
 # - Shaarli image
 FROM alpine:3.6
 LABEL maintainer="Shaarli Community"
