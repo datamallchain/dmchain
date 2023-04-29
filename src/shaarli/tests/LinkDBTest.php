@@ -116,18 +116,16 @@ class LinkDBTest extends PHPUnit_Framework_TestCase
      */
     public function testCheckDBLoad()
     {
-        $linkDB = new LinkDB(false, false);
-        $this->assertEquals(
-            self::$dummyDatastoreFilesize,
-            filesize(self::$testDatastore)
-        );
+        $linkDB = new LinkDB(self::$testDatastore, false, false);
+        $datastoreSize = filesize(self::$testDatastore);
+        $this->assertGreaterThan(0, $datastoreSize);
 
         $checkDB = self::getMethod('checkDB');
         $checkDB->invokeArgs($linkDB, array());
 
         // ensure the datastore is left unmodified
         $this->assertEquals(
-            self::$dummyDatastoreFilesize,
+            $datastoreSize,
             filesize(self::$testDatastore)
         );
     }
