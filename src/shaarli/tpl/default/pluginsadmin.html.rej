@@ -1,0 +1,10 @@
+diff a/src/shaarli/tpl/default/pluginsadmin.html b/src/shaarli/tpl/default/pluginsadmin.html	(rejected hunks)
+@@ -176,7 +176,7 @@ <h3 class="window-subtitle">{function="str_replace('_', ' ', $key)"}</h3>
+ </form>
+ 
+ {include="page.footer"}
+-<script src="inc/plugin_admin.js#"></script>
++<script src="js/pluginsadmin.min.js?v={$version_hash}"></script>
+ 
+ </body>
+ </html>
