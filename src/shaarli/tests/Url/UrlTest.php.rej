@@ -1,0 +1,24 @@
+diff a/src/shaarli/tests/Url/UrlTest.php b/src/shaarli/tests/Url/UrlTest.php	(rejected hunks)
+@@ -156,4 +156,22 @@ function testAddTrailingSlash()
+         $this->assertEquals($strOn, add_trailing_slash($strOn));
+         $this->assertEquals($strOn, add_trailing_slash($strOff));
+     }
++
++    /**
++     * Test valid HTTP url.
++     */
++    function testUrlIsHttp()
++    {
++        $url = new Url(self::$baseUrl);
++        $this->assertTrue($url->isHttp());
++    }
++
++    /**
++     * Test non HTTP url.
++     */
++    function testUrlIsNotHttp()
++    {
++        $url = new Url('ftp://save.tld/mysave');
++        $this->assertFalse($url->isHttp());
++    }
+ }
