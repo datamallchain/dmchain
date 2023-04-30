@@ -29,6 +29,12 @@ This should look like:
 $GLOBALS['config']['ENABLED_PLUGINS'] = array('qrcode', 'any_other_plugin', 'markdown')
 ```
 
+### No Markdown tag
+
+If the tag `.nomarkdown` is set for a shaare, it won't be converted to Markdown syntax.
+ 
+> Note: it's a private tag (leading dot), so it won't be displayed to visitors.
+
 ### Known issue
 
 #### Redirector
