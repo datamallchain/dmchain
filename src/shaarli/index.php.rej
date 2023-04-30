@@ -1,18 +1,25 @@
 diff a/src/shaarli/index.php b/src/shaarli/index.php	(rejected hunks)
-@@ -1,6 +1,6 @@
- <?php
- /**
-- * Shaarli v0.6.4 - Shaare your links...
-+ * Shaarli v0.6.5 - Shaare your links...
-  *
-  * The personal, minimalist, super-fast, no-database Delicious clone.
-  *
-@@ -125,7 +125,7 @@
- /*
-  * PHP configuration
-  */
--define('shaarli_version', '0.6.4');
-+define('shaarli_version', '0.6.5');
+@@ -1352,9 +1335,9 @@ function renderPage()
  
- // http://server.com/x/shaarli --> /shaarli/
- define('WEB_PATH', substr($_SERVER["REQUEST_URI"], 0, 1+strrpos($_SERVER["REQUEST_URI"], '/', 0)));
+         // Delete a tag:
+         if (isset($_POST['deletetag']) && !empty($_POST['fromtag'])) {
+-            $needle=trim($_POST['fromtag']);
++            $needle = trim($_POST['fromtag']);
+             // True for case-sensitive tag search.
+-            $linksToAlter = $LINKSDB->filter(LinkFilter::$FILTER_TAG, $needle, true);
++            $linksToAlter = $LINKSDB->filterSearch(array('searchtags' => $needle), true);
+             foreach($linksToAlter as $key=>$value)
+             {
+                 $tags = explode(' ',trim($value['tags']));
+@@ -1369,9 +1352,9 @@ function renderPage()
+ 
+         // Rename a tag:
+         if (isset($_POST['renametag']) && !empty($_POST['fromtag']) && !empty($_POST['totag'])) {
+-            $needle=trim($_POST['fromtag']);
++            $needle = trim($_POST['fromtag']);
+             // True for case-sensitive tag search.
+-            $linksToAlter = $LINKSDB->filter(LinkFilter::$FILTER_TAG, $needle, true);
++            $linksToAlter = $LINKSDB->filterSearch(array('searchtags' => $needle), true);
+             foreach($linksToAlter as $key=>$value)
+             {
+                 $tags = explode(' ',trim($value['tags']));
