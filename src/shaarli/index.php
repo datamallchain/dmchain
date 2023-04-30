@@ -1,6 +1,6 @@
 <?php
 /**
- * Shaarli v0.6.2 - Shaare your links...
+ * Shaarli v0.6.1 - Shaare your links...
  *
  * The personal, minimalist, super-fast, no-database Delicious clone.
  *
@@ -119,7 +119,7 @@ $GLOBALS['config']['PUBSUBHUB_URL'] = '';
 /*
  * PHP configuration
  */
-define('shaarli_version', '0.6.2');
+define('shaarli_version', '0.6.1');
 
 // http://server.com/x/shaarli --> /shaarli/
 define('WEB_PATH', substr($_SERVER["REQUEST_URI"], 0, 1+strrpos($_SERVER["REQUEST_URI"], '/', 0)));
@@ -312,7 +312,7 @@ $userIsLoggedIn = setup_login_state();
 function logm($message)
 {
     $t = strval(date('Y/m/d_H:i:s')).' - '.$_SERVER["REMOTE_ADDR"].' - '.strval($message)."\n";
-    file_put_contents($GLOBAL['config']['LOG_FILE'], $t, FILE_APPEND);
+    file_put_contents($GLOBALS['config']['LOG_FILE'], $t, FILE_APPEND);
 }
 
 // ------------------------------------------------------------------------------------------
@@ -1233,6 +1233,11 @@ function renderPage()
         if (empty($_SERVER['HTTP_REFERER'])) { header('Location: ?searchtags='.urlencode($_GET['addtag'])); exit; } // In case browser does not send HTTP_REFERER
         parse_str(parse_url($_SERVER['HTTP_REFERER'],PHP_URL_QUERY), $params);
 
+        // Prevent redirection loop
+        if (isset($params['addtag'])) {
+            unset($params['addtag']);
+        }
+
         // Check if this tag is already in the search query and ignore it if it is.
         // Each tag is always separated by a space
         if (isset($params['searchtags'])) {
@@ -1448,20 +1453,19 @@ function renderPage()
     // -------- User wants to rename a tag or delete it
     if ($targetPage == Router::$PAGE_CHANGETAG)
     {
-        if (empty($_POST['fromtag']) || (empty($_POST['totag']) && isset($_POST['renametag']))) {
-            $PAGE->assign('linkcount', count($LINKSDB));
-            $PAGE->assign('token', getToken());
+        if (empty($_POST['fromtag']))
+        {
+            $PAGE->assign('linkcount',count($LINKSDB));
+            $PAGE->assign('token',getToken());
             $PAGE->assign('tags', $LINKSDB->allTags());
             $PAGE->renderPage('changetag');
             exit;
         }
-
-        if (!tokenOk($_POST['token'])) {
-            die('Wrong token.');
-        }
+        if (!tokenOk($_POST['token'])) die('Wrong token.');
 
         // Delete a tag:
-        if (isset($_POST['deletetag']) && !empty($_POST['fromtag'])) {
+        if (!empty($_POST['deletetag']) && !empty($_POST['fromtag']))
+        {
             $needle=trim($_POST['fromtag']);
             $linksToAlter = $LINKSDB->filterTags($needle,true); // True for case-sensitive tag search.
             foreach($linksToAlter as $key=>$value)
@@ -1477,7 +1481,8 @@ function renderPage()
         }
 
         // Rename a tag:
-        if (isset($_POST['renametag']) && !empty($_POST['fromtag']) && !empty($_POST['totag'])) {
+        if (!empty($_POST['renametag']) && !empty($_POST['fromtag']) && !empty($_POST['totag']))
+        {
             $needle=trim($_POST['fromtag']);
             $linksToAlter = $LINKSDB->filterTags($needle,true); // true for case-sensitive tag search.
             foreach($linksToAlter as $key=>$value)

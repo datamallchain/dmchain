@@ -44,8 +44,6 @@ class PluginWallabagTest extends PHPUnit_Framework_TestCase
 
         // plugin data
         $this->assertEquals(1, count($link['link_plugin']));
-        $this->assertNotFalse(strpos($link['link_plugin'][0], urlencode($str)));
-        $this->assertNotFalse(strpos($link['link_plugin'][0], $GLOBALS['plugins']['WALLABAG_URL']));
+        $this->assertNotFalse(strpos($link['link_plugin'][0], $str));
     }
 }
-
