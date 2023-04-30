@@ -1,35 +1,16 @@
 diff a/src/shaarli/doc/md/Download-and-Installation.md b/src/shaarli/doc/md/Download-and-Installation.md	(rejected hunks)
-@@ -38,12 +38,14 @@ $ mv Shaarli /path/to/shaarli/
- Cloning using `git` or downloading Github branches as zip files requires additional steps:
+@@ -25,11 +25,11 @@ Using one of the following methods:
  
-  * Install [Composer](Unit-tests.md#install_composer) to manage Shaarli dependencies.
-+ * Install [yarn](https://yarnpkg.com/lang/en/docs/install/) to build the frontend dependencies.
-  * Install [python3-virtualenv](https://pypi.python.org/pypi/virtualenv) to build the local HTML documentation.
+ In most cases, you should download the latest Shaarli release from the [releases](https://github.com/shaarli/Shaarli/releases) page. **Download our *shaarli-full* archive** to include dependencies.
  
+-The current latest released version is `v0.9.6`
++The current latest released version is `v0.9.7`
+ 
+ ```bash
+-$ wget https://github.com/shaarli/Shaarli/releases/download/v0.9.6/shaarli-v0.9.6-full.zip
+-$ unzip shaarli-v0.9.6-full.zip
++$ wget https://github.com/shaarli/Shaarli/releases/download/v0.9.7/shaarli-v0.9.7-full.zip
++$ unzip shaarli-v0.9.7-full.zip
+ $ mv Shaarli /path/to/shaarli/
  ```
- $ mkdir -p /path/to/shaarli && cd /path/to/shaarli/
- $ git clone -b latest https://github.com/shaarli/Shaarli.git .
- $ composer install --no-dev --prefer-dist
-+$ make build_frontend
- $ make translate
- $ make htmldoc
- ```
-@@ -91,7 +93,9 @@ $ composer install --no-dev --prefer-dist
  
- _Use at your own risk!_
- 
--Install [Composer](Unit-tests.md#install_composer) to manage Shaarli dependencies.
-+Install [Composer](Unit-tests.md#install_composer) to manage Shaarli PHP dependencies,
-+and [yarn](https://yarnpkg.com/lang/en/docs/install/) 
-+for front-end dependencies.
- 
- To get the latest changes from the `master` branch:
- 
-@@ -101,6 +105,7 @@ $ git clone https://github.com/shaarli/Shaarli.git -b master /path/to/shaarli/
- # install/update third-party dependencies
- $ cd /path/to/shaarli
- $ composer install --no-dev --prefer-dist
-+$ make build_frontend
- $ make translate
- $ make htmldoc
- ```
