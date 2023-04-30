@@ -1569,7 +1569,7 @@ function renderPage()
         $link = array(
             'title' => trim($_POST['lf_title']),
             'url' => $url,
-            'description' => trim($_POST['lf_description']),
+            'description' => $_POST['lf_description'],
             'private' => (isset($_POST['lf_private']) ? 1 : 0),
             'linkdate' => $linkdate,
             'tags' => str_replace(',', ' ', $tags)
