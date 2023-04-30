@@ -2,17 +2,17 @@ diff a/src/shaarli/index.php b/src/shaarli/index.php	(rejected hunks)
 @@ -1,6 +1,6 @@
  <?php
  /**
-- * Shaarli v0.6.2 - Shaare your links...
-+ * Shaarli v0.6.3 - Shaare your links...
+- * Shaarli v0.6.3 - Shaare your links...
++ * Shaarli v0.6.4 - Shaare your links...
   *
   * The personal, minimalist, super-fast, no-database Delicious clone.
   *
-@@ -119,7 +119,7 @@
+@@ -125,7 +125,7 @@
  /*
   * PHP configuration
   */
--define('shaarli_version', '0.6.2');
-+define('shaarli_version', '0.6.3');
+-define('shaarli_version', '0.6.3');
++define('shaarli_version', '0.6.4');
  
  // http://server.com/x/shaarli --> /shaarli/
  define('WEB_PATH', substr($_SERVER["REQUEST_URI"], 0, 1+strrpos($_SERVER["REQUEST_URI"], '/', 0)));
