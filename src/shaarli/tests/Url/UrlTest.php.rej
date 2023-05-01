@@ -1,24 +1,21 @@
 diff a/src/shaarli/tests/Url/UrlTest.php b/src/shaarli/tests/Url/UrlTest.php	(rejected hunks)
-@@ -156,4 +156,22 @@ function testAddTrailingSlash()
-         $this->assertEquals($strOn, add_trailing_slash($strOn));
-         $this->assertEquals($strOn, add_trailing_slash($strOff));
+@@ -181,4 +181,19 @@ function testUrlIsNotHttp()
+         $url = new Url('ftp://save.tld/mysave');
+         $this->assertFalse($url->isHttp());
      }
 +
 +    /**
-+     * Test valid HTTP url.
++     * Test IndToAscii.
 +     */
-+    function testUrlIsHttp()
++    function testIndToAscii()
 +    {
-+        $url = new Url(self::$baseUrl);
-+        $this->assertTrue($url->isHttp());
-+    }
++        $ind = 'http://www.académie-française.fr/';
++        $expected = 'http://www.xn--acadmie-franaise-npb1a.fr/';
++        $url = new Url($ind);
++        $this->assertEquals($expected, $url->indToAscii());
 +
-+    /**
-+     * Test non HTTP url.
-+     */
-+    function testUrlIsNotHttp()
-+    {
-+        $url = new Url('ftp://save.tld/mysave');
-+        $this->assertFalse($url->isHttp());
++        $notInd = 'http://www.academie-francaise.fr/';
++        $url = new Url($notInd);
++        $this->assertEquals($notInd, $url->indToAscii());
 +    }
  }
