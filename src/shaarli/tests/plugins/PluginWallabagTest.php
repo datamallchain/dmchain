@@ -25,7 +25,8 @@ class PluginWallabagTest extends PHPUnit_Framework_TestCase
      */
     function testWallabagLinklist()
     {
-        $GLOBALS['plugins']['WALLABAG_URL'] = 'value';
+        $conf = ConfigManager::getInstance();
+        $conf->set('plugins.WALLABAG_URL', 'value');
         $str = 'http://randomstr.com/test';
         $data = array(
             'title' => $str,
