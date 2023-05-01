@@ -792,8 +792,6 @@ function renderPage($conf, $pluginManager)
     if ($targetPage == Router::$PAGE_LOGIN)
     {
         if ($conf->get('security.open_shaarli')) { header('Location: ?'); exit; }  // No need to login for open Shaarli
-        $token=''; if (ban_canLogin($conf)) $token=getToken($conf); // Do not waste token generation if not useful.
-        $PAGE->assign('token',$token);
         if (isset($_GET['username'])) {
             $PAGE->assign('username', escape($_GET['username']));
         }
@@ -1114,7 +1112,6 @@ function renderPage($conf, $pluginManager)
         }
         else // show the change password form.
         {
-            $PAGE->assign('token',getToken($conf));
             $PAGE->renderPage('changepassword');
             exit;
         }
@@ -1161,7 +1158,6 @@ function renderPage($conf, $pluginManager)
         }
         else // Show the configuration form.
         {
-            $PAGE->assign('token',getToken($conf));
             $PAGE->assign('title', $conf->get('general.title'));
             $PAGE->assign('redirector', $conf->get('redirector.url'));
             list($timezone_form, $timezone_js) = generateTimeZoneForm($conf->get('general.timezone'));
@@ -1181,7 +1177,6 @@ function renderPage($conf, $pluginManager)
     if ($targetPage == Router::$PAGE_CHANGETAG)
     {
         if (empty($_POST['fromtag']) || (empty($_POST['totag']) && isset($_POST['renametag']))) {
-            $PAGE->assign('token', getToken($conf));
             $PAGE->assign('tags', $LINKSDB->allTags());
             $PAGE->renderPage('changetag');
             exit;
@@ -1360,7 +1355,6 @@ function renderPage($conf, $pluginManager)
         $data = array(
             'link' => $link,
             'link_is_new' => false,
-            'token' => getToken($conf),
             'http_referer' => (isset($_SERVER['HTTP_REFERER']) ? escape($_SERVER['HTTP_REFERER']) : ''),
             'tags' => $LINKSDB->allTags(),
         );
@@ -1427,7 +1421,6 @@ function renderPage($conf, $pluginManager)
         $data = array(
             'link' => $link,
             'link_is_new' => $link_is_new,
-            'token' => getToken($conf), // XSRF protection.
             'http_referer' => (isset($_SERVER['HTTP_REFERER']) ? escape($_SERVER['HTTP_REFERER']) : ''),
             'source' => (isset($_GET['source']) ? $_GET['source'] : ''),
             'tags' => $LINKSDB->allTags(),
@@ -1505,7 +1498,6 @@ function renderPage($conf, $pluginManager)
     // -------- Show upload/import dialog:
     if ($targetPage == Router::$PAGE_IMPORT)
     {
-        $PAGE->assign('token',getToken($conf));
         $PAGE->assign('maxfilesize',getMaxFileSize());
         $PAGE->renderPage('import');
         exit;
@@ -1753,7 +1745,6 @@ function buildLinkList($PAGE,$LINKSDB, $conf, $pluginManager)
         'search_term' => $searchterm,
         'search_tags' => $searchtags,
         'redirector' => $conf->get('redirector.url'),  // Optional redirector URL.
-        'token' => $token,
         'links' => $linkDisp,
         'tags' => $LINKSDB->allTags(),
     );
