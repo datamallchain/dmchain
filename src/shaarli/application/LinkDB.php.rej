@@ -1,0 +1,10 @@
+diff a/src/shaarli/application/LinkDB.php b/src/shaarli/application/LinkDB.php	(rejected hunks)
+@@ -442,7 +442,7 @@ public function allTags()
+         $tags = array();
+         $caseMapping = array();
+         foreach ($this->_links as $link) {
+-            foreach (explode(' ', $link['tags']) as $tag) {
++            foreach (preg_split('/\s+/', $link['tags'], 0, PREG_SPLIT_NO_EMPTY) as $tag) {
+                 if (empty($tag)) {
+                     continue;
+                 }
