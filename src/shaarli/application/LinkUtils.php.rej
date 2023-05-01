@@ -1,0 +1,9 @@
+diff a/src/shaarli/application/LinkUtils.php b/src/shaarli/application/LinkUtils.php	(rejected hunks)
+@@ -162,6 +162,7 @@ function space2nbsp($text)
+  *
+  * @param string $description shaare's description.
+  * @param string $redirector  if a redirector is set, use it to gerenate links.
++ * @param string $indexUrl    URL to Shaarli's index.
+  *
+  * @return string formatted description.
+  */
