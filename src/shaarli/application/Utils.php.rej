@@ -1,0 +1,8 @@
+diff a/src/shaarli/application/Utils.php b/src/shaarli/application/Utils.php	(rejected hunks)
+@@ -273,4 +273,4 @@ function autoLocale($headerLocale)
+         }
+     }
+     setlocale(LC_ALL, $attempts);
+-}
+\ No newline at end of file
++}
