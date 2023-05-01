@@ -1,21 +1,14 @@
 diff a/src/shaarli/tests/Url/UrlTest.php b/src/shaarli/tests/Url/UrlTest.php	(rejected hunks)
-@@ -181,4 +181,19 @@ function testUrlIsNotHttp()
-         $url = new Url('ftp://save.tld/mysave');
-         $this->assertFalse($url->isHttp());
+@@ -190,10 +190,10 @@ function testIndToAscii()
+         $ind = 'http://www.académie-française.fr/';
+         $expected = 'http://www.xn--acadmie-franaise-npb1a.fr/';
+         $url = new Url($ind);
+-        $this->assertEquals($expected, $url->indToAscii());
++        $this->assertEquals($expected, $url->idnToAscii());
+ 
+         $notInd = 'http://www.academie-francaise.fr/';
+         $url = new Url($notInd);
+-        $this->assertEquals($notInd, $url->indToAscii());
++        $this->assertEquals($notInd, $url->idnToAscii());
      }
-+
-+    /**
-+     * Test IndToAscii.
-+     */
-+    function testIndToAscii()
-+    {
-+        $ind = 'http://www.académie-française.fr/';
-+        $expected = 'http://www.xn--acadmie-franaise-npb1a.fr/';
-+        $url = new Url($ind);
-+        $this->assertEquals($expected, $url->indToAscii());
-+
-+        $notInd = 'http://www.academie-francaise.fr/';
-+        $url = new Url($notInd);
-+        $this->assertEquals($notInd, $url->indToAscii());
-+    }
  }
