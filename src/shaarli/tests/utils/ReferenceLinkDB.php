@@ -82,7 +82,7 @@ class ReferenceLinkDB
     /**
      * Adds a new link
      */
-    protected function addLink($title, $url, $description, $private, $date, $tags)
+    protected function addLink($title, $url, $description, $private, $date, $tags, $updated = '')
     {
         $link = array(
             'title' => $title,
@@ -91,6 +91,7 @@ class ReferenceLinkDB
             'private' => $private,
             'linkdate' => $date,
             'tags' => $tags,
+            'updated' => $updated,
         );
         $this->_links[$date] = $link;
 

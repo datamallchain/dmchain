@@ -1,0 +1,11 @@
+diff a/src/shaarli/tests/utils/ReferenceLinkDB.php b/src/shaarli/tests/utils/ReferenceLinkDB.php	(rejected hunks)
+@@ -30,7 +30,8 @@ function __construct()
+             'Richard Stallman and the Free Software Revolution. Read this. #hashtag',
+             0,
+             '20150310_114633',
+-            'free gnu software stallman -exclude stuff hashtag'
++            'free gnu software stallman -exclude stuff hashtag',
++            '20160803_093033'
+         );
+ 
+         $this->addLink(
