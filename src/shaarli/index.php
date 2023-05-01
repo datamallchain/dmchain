@@ -1,6 +1,6 @@
 <?php
 /**
- * Shaarli v0.6.1 - Shaare your links...
+ * Shaarli v0.7.0 - Shaare your links...
  *
  * The personal, minimalist, super-fast, no-database Delicious clone.
  *
@@ -22,114 +22,13 @@ if (date_default_timezone_get() == '') {
     date_default_timezone_set('UTC');
 }
 
-/* -----------------------------------------------------------------------------
- * Hardcoded parameters
- * You should not touch any code below (or at your own risks!)
- * (These parameters can be overwritten by editing the file /data/config.php)
- * -----------------------------------------------------------------------------
- */
-
-/*
- * Shaarli directories & configuration files
- */
-// Data subdirectory
-$GLOBALS['config']['DATADIR'] = 'data';
-
-// Main configuration file
-$GLOBALS['config']['CONFIG_FILE'] = $GLOBALS['config']['DATADIR'].'/config.php';
-
-// Link datastore
-$GLOBALS['config']['DATASTORE'] = $GLOBALS['config']['DATADIR'].'/datastore.php';
-
-// Banned IPs
-$GLOBALS['config']['IPBANS_FILENAME'] = $GLOBALS['config']['DATADIR'].'/ipbans.php';
-
-// Processed updates file.
-$GLOBALS['config']['UPDATES_FILE'] = $GLOBALS['config']['DATADIR'].'/updates.txt';
-
-// Access log
-$GLOBALS['config']['LOG_FILE'] = $GLOBALS['config']['DATADIR'].'/log.txt';
-
-// For updates check of Shaarli
-$GLOBALS['config']['UPDATECHECK_FILENAME'] = $GLOBALS['config']['DATADIR'].'/lastupdatecheck.txt';
-
-// Set ENABLE_UPDATECHECK to disabled by default.
-$GLOBALS['config']['ENABLE_UPDATECHECK'] = false;
-
-// RainTPL cache directory (keep the trailing slash!)
-$GLOBALS['config']['RAINTPL_TMP'] = 'tmp/';
-// Raintpl template directory (keep the trailing slash!)
-$GLOBALS['config']['RAINTPL_TPL'] = 'tpl/';
-
-// Thumbnail cache directory
-$GLOBALS['config']['CACHEDIR'] = 'cache';
-
-// Atom & RSS feed cache directory
-$GLOBALS['config']['PAGECACHE'] = 'pagecache';
-
-/*
- * Global configuration
- */
-// Ban IP after this many failures
-$GLOBALS['config']['BAN_AFTER'] = 4;
-// Ban duration for IP address after login failures (in seconds)
-$GLOBALS['config']['BAN_DURATION'] = 1800;
-
-// Feed options
-// Enable RSS permalinks by default.
-// This corresponds to the default behavior of shaarli before this was added as an option.
-$GLOBALS['config']['ENABLE_RSS_PERMALINKS'] = true;
-// If true, an extra "ATOM feed" button will be displayed in the toolbar
-$GLOBALS['config']['SHOW_ATOM'] = false;
-
-// Link display options
-$GLOBALS['config']['HIDE_PUBLIC_LINKS'] = false;
-$GLOBALS['config']['HIDE_TIMESTAMPS'] = false;
-$GLOBALS['config']['LINKS_PER_PAGE'] = 20;
-
-// Open Shaarli (true): anyone can add/edit/delete links without having to login
-$GLOBALS['config']['OPEN_SHAARLI'] = false;
-
-// Thumbnails
-// Display thumbnails in links
-$GLOBALS['config']['ENABLE_THUMBNAILS'] = true;
-// Store thumbnails in a local cache
-$GLOBALS['config']['ENABLE_LOCALCACHE'] = true;
-
-// Update check frequency for Shaarli. 86400 seconds=24 hours
-$GLOBALS['config']['UPDATECHECK_BRANCH'] = 'stable';
-$GLOBALS['config']['UPDATECHECK_INTERVAL'] = 86400;
-
-$GLOBALS['config']['REDIRECTOR_URLENCODE'] = true;
-
-/*
- * Plugin configuration
- *
- * Warning: order matters!
- *
- * These settings may be be overriden in:
- *  - data/config.php
- *  - each plugin's configuration file
- */
-//$GLOBALS['config']['ENABLED_PLUGINS'] = array(
-//    'qrcode', 'archiveorg', 'readityourself', 'demo_plugin', 'playvideos',
-//    'wallabag', 'markdown', 'addlink_toolbar',
-//);
-$GLOBALS['config']['ENABLED_PLUGINS'] = array('qrcode');
-
-// Initialize plugin parameters array.
-$GLOBALS['plugins'] = array();
-
-// PubSubHubbub support. Put an empty string to disable, or put your hub url here to enable.
-$GLOBALS['config']['PUBSUBHUB_URL'] = '';
-
 /*
  * PHP configuration
  */
-define('shaarli_version', '0.6.1');
+define('shaarli_version', '0.7.0');
 
 // http://server.com/x/shaarli --> /shaarli/
-define('WEB_PATH', substr($_SERVER["REQUEST_URI"], 0, 1+strrpos($_SERVER["REQUEST_URI"], '/', 0)));
+define('WEB_PATH', substr($_SERVER['REQUEST_URI'], 0, 1+strrpos($_SERVER['REQUEST_URI'], '/', 0)));
 
 // High execution time in case of problematic imports/exports.
 ini_set('max_input_time','60');
@@ -1246,22 +1145,22 @@ function renderPage()
     // -------- User wants to rename a tag or delete it
     if ($targetPage == Router::$PAGE_CHANGETAG)
     {
-        if (empty($_POST['fromtag']))
-        {
-            $PAGE->assign('linkcount',count($LINKSDB));
-            $PAGE->assign('token',getToken());
+        if (empty($_POST['fromtag']) || (empty($_POST['totag']) && isset($_POST['renametag']))) {
+            $PAGE->assign('token', getToken());
             $PAGE->assign('tags', $LINKSDB->allTags());
             $PAGE->renderPage('changetag');
             exit;
         }
-        if (!tokenOk($_POST['token'])) die('Wrong token.');
+
+        if (!tokenOk($_POST['token'])) {
+            die('Wrong token.');
+        }
 
         // Delete a tag:
-        if (!empty($_POST['deletetag']) && !empty($_POST['fromtag']))
-        {
-            $needle=trim($_POST['fromtag']);
+        if (isset($_POST['deletetag']) && !empty($_POST['fromtag'])) {
+            $needle = trim($_POST['fromtag']);
             // True for case-sensitive tag search.
-            $linksToAlter = $LINKSDB->filter(LinkFilter::$FILTER_TAG, $needle, true);
+            $linksToAlter = $LINKSDB->filterSearch(array('searchtags' => $needle), true);
             foreach($linksToAlter as $key=>$value)
             {
                 $tags = explode(' ',trim($value['tags']));
@@ -1275,11 +1174,10 @@ function renderPage()
         }
 
         // Rename a tag:
-        if (!empty($_POST['renametag']) && !empty($_POST['fromtag']) && !empty($_POST['totag']))
-        {
-            $needle=trim($_POST['fromtag']);
+        if (isset($_POST['renametag']) && !empty($_POST['fromtag']) && !empty($_POST['totag'])) {
+            $needle = trim($_POST['fromtag']);
             // True for case-sensitive tag search.
-            $linksToAlter = $LINKSDB->filter(LinkFilter::$FILTER_TAG, $needle, true);
+            $linksToAlter = $LINKSDB->filterSearch(array('searchtags' => $needle), true);
             foreach($linksToAlter as $key=>$value)
             {
                 $tags = explode(' ',trim($value['tags']));

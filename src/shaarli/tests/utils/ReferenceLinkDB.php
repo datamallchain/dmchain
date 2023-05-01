@@ -18,34 +18,34 @@ class ReferenceLinkDB
         $this->addLink(
             'Link title: @website',
             '?WDWyig',
-            'Stallman has a beard and is part of the Free Software Foundation (or not). Seriously, read this. #hashtag',
+            'Stallman has a beard and is part of the Free Software Foundation (or not). Seriously, read this.',
             0,
             '20150310_114651',
-            'sTuff'
+            'stuff'
         );
 
         $this->addLink(
             'Free as in Freedom 2.0 @website',
             'https://static.fsf.org/nosvn/faif-2.0.pdf',
-            'Richard Stallman and the Free Software Revolution. Read this. #hashtag',
+            'Richard Stallman and the Free Software Revolution. Read this.',
             0,
             '20150310_114633',
-            'free gnu software stallman -exclude stuff hashtag'
+            'free gnu software stallman -exclude stuff'
         );
 
         $this->addLink(
             'MediaGoblin',
             'http://mediagoblin.org/',
-            'A free software media publishing platform #hashtagOther',
+            'A free software media publishing platform',
             0,
             '20130614_184135',
-            'gnu media web .hidden hashtag'
+            'gnu media web .hidden'
         );
 
         $this->addLink(
             'w3c-markup-validator',
             'https://dvcs.w3.org/hg/markup-validator/summary',
-            'Mercurial repository for the W3C Validator #private',
+            'Mercurial repository for the W3C Validator',
             1,
             '20141125_084734',
             'css html w3c web Mercurial'
@@ -54,7 +54,7 @@ class ReferenceLinkDB
         $this->addLink(
             'UserFriendly - Web Designer',
             'http://ars.userfriendly.org/cartoons/?id=20121206',
-            'Naming conventions... #private',
+            'Naming conventions...',
             0,
             '20121206_142300',
             'dev cartoon web'

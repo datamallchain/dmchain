@@ -17,8 +17,10 @@
  *  - private:  Is this link private? 0=no, other value=yes
  *  - tags:     tags attached to this entry (separated by spaces)
  *  - title     Title of the link
- *  - url       URL of the link. Can be absolute or relative.
+ *  - url       URL of the link. Used for displayable links (no redirector, relative, etc.).
+ *              Can be absolute or relative.
  *              Relative URLs are permalinks (e.g.'?m-ukcw')
+ *  - real_url  Absolute processed URL.
  *
  * Implements 3 interfaces:
  *  - ArrayAccess: behaves like an associative array;
@@ -407,7 +409,7 @@ You use the community supported version of the original Shaarli project, by Seba
         $searchterm = !empty($filterRequest['searchterm']) ? escape($filterRequest['searchterm']) : '';
 
         // Search tags + fullsearch.
-        if (! empty($searchtags) && ! empty($searchterm)) {
+        if (empty($type) && ! empty($searchtags) && ! empty($searchterm)) {
             $type = LinkFilter::$FILTER_TAG | LinkFilter::$FILTER_TEXT;
             $request = array($searchtags, $searchterm);
         }
@@ -438,18 +440,11 @@ You use the community supported version of the original Shaarli project, by Seba
     public function allTags()
     {
         $tags = array();
-        $caseMapping = array();
         foreach ($this->_links as $link) {
             foreach (explode(' ', $link['tags']) as $tag) {
-                if (empty($tag)) {
-                    continue;
+                if (!empty($tag)) {
+                    $tags[$tag] = (empty($tags[$tag]) ? 1 : $tags[$tag] + 1);
                 }
-                // The first case found will be displayed.
-                if (!isset($caseMapping[strtolower($tag)])) {
-                    $caseMapping[strtolower($tag)] = $tag;
-                    $tags[$caseMapping[strtolower($tag)]] = 0;
-                }
-                $tags[$caseMapping[strtolower($tag)]]++;
             }
         }
         // Sort tags by usage (most used tag first)

@@ -256,7 +256,7 @@ class LinkDBTest extends PHPUnit_Framework_TestCase
         $link = self::$publicLinkDB->getLinkFromUrl('http://mediagoblin.org/');
 
         $this->assertNotEquals(false, $link);
-        $this->assertContains(
+        $this->assertEquals(
             'A free software media publishing platform',
             $link['description']
         );
@@ -290,10 +290,7 @@ class LinkDBTest extends PHPUnit_Framework_TestCase
                 'stallman' => 1,
                 'free' => 1,
                 '-exclude' => 1,
-                // The DB contains a link with `sTuff` and another one with `stuff` tag.
-                // They need to be grouped with the first case found (`sTuff`).
-                'sTuff' => 2,
-                'hashtag' => 2,
+                'stuff' => 2,
             ),
             self::$publicLinkDB->allTags()
         );
@@ -313,10 +310,9 @@ class LinkDBTest extends PHPUnit_Framework_TestCase
                 'w3c' => 1,
                 'css' => 1,
                 'Mercurial' => 1,
-                'sTuff' => 2,
+                'stuff' => 2,
                 '-exclude' => 1,
                 '.hidden' => 1,
-                'hashtag' => 2,
             ),
             self::$privateLinkDB->allTags()
         );
