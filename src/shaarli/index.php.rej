@@ -1,25 +1,9 @@
 diff a/src/shaarli/index.php b/src/shaarli/index.php	(rejected hunks)
-@@ -1352,9 +1335,9 @@ function renderPage()
- 
-         // Delete a tag:
-         if (isset($_POST['deletetag']) && !empty($_POST['fromtag'])) {
--            $needle=trim($_POST['fromtag']);
-+            $needle = trim($_POST['fromtag']);
-             // True for case-sensitive tag search.
--            $linksToAlter = $LINKSDB->filter(LinkFilter::$FILTER_TAG, $needle, true);
-+            $linksToAlter = $LINKSDB->filterSearch(array('searchtags' => $needle), true);
-             foreach($linksToAlter as $key=>$value)
-             {
-                 $tags = explode(' ',trim($value['tags']));
-@@ -1369,9 +1352,9 @@ function renderPage()
- 
-         // Rename a tag:
-         if (isset($_POST['renametag']) && !empty($_POST['fromtag']) && !empty($_POST['totag'])) {
--            $needle=trim($_POST['fromtag']);
-+            $needle = trim($_POST['fromtag']);
-             // True for case-sensitive tag search.
--            $linksToAlter = $LINKSDB->filter(LinkFilter::$FILTER_TAG, $needle, true);
-+            $linksToAlter = $LINKSDB->filterSearch(array('searchtags' => $needle), true);
-             foreach($linksToAlter as $key=>$value)
-             {
-                 $tags = explode(' ',trim($value['tags']));
+@@ -1208,7 +1204,6 @@ function renderPage()
+     if ($targetPage == Router::$PAGE_CHANGETAG)
+     {
+         if (empty($_POST['fromtag']) || (empty($_POST['totag']) && isset($_POST['renametag']))) {
+-            $PAGE->assign('linkcount', count($LINKSDB));
+             $PAGE->assign('token', getToken());
+             $PAGE->assign('tags', $LINKSDB->allTags());
+             $PAGE->renderPage('changetag');
