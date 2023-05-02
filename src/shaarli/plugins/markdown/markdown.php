@@ -65,6 +65,7 @@ function hook_markdown_render_daily($data)
     foreach ($data['cols'] as &$value) {
         foreach ($value as &$value2) {
             if (!empty($value2['tags']) && noMarkdownTag($value2['tags'])) {
+                $value2 = stripNoMarkdownTag($value2);
                 continue;
             }
             $value2['formatedDescription'] = process_markdown($value2['formatedDescription']);
