@@ -1,10 +1,10 @@
 diff a/src/shaarli/index.php b/src/shaarli/index.php	(rejected hunks)
-@@ -282,7 +282,7 @@ function logout() {
-         unset($_SESSION['uid']);
-         unset($_SESSION['ip']);
-         unset($_SESSION['username']);
--        unset($_SESSION['privateonly']);
-+        unset($_SESSION['visibility']);
-         unset($_SESSION['untaggedonly']);
-     }
-     setcookie('shaarli_staySignedIn', FALSE, 0, WEB_PATH);
+@@ -362,7 +362,7 @@ function showDailyRSS($conf, $loginManager)
+                 $conf->get('redirector.encode_url')
+             );
+             $link['timestamp'] = $link['created']->getTimestamp();
+-            if (startsWith($link['url'], '?')) {
++            if (is_note($link['url'])) {
+                 $link['url'] = index_url($_SERVER) . $link['url'];  // make permalink URL absolute
+             }
+         }
