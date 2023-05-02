@@ -93,7 +93,10 @@ class Url
         'utm_',
 
         // ATInternet
-        'xtor='
+        'xtor=',
+
+        // Other
+        'campaign_'
     );
 
     private static $annoyingFragments = array(
