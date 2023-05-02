@@ -1,23 +1,27 @@
 diff a/src/shaarli/tests/UtilsTest.php b/src/shaarli/tests/UtilsTest.php	(rejected hunks)
-@@ -253,4 +253,21 @@ public function testIsSessionIdInvalid()
+@@ -253,7 +253,7 @@ public function testIsSessionIdInvalid()
              is_session_id_valid('c0ZqcWF3VFE2NmJBdm1HMVQ0ZHJ3UmZPbTFsNGhkNHI=')
          );
      }
+-
++    
+     /**
+      * Test generateSecretApi.
+      */
+@@ -270,4 +270,16 @@ public function testGenerateSecretApiInvalid()
+         $this->assertFalse(generate_api_secret('', ''));
+         $this->assertFalse(generate_api_secret(false, false));
+     }
 +
 +    /**
-+     * Test generateSecretApi.
++     * Test normalize_spaces.
 +     */
-+    public function testGenerateSecretApi()
++    public function testNormalizeSpace()
 +    {
-+        $this->assertEquals(12, strlen(generate_api_secret('foo', 'bar')));
-+    }
-+
-+    /**
-+     * Test generateSecretApi with invalid parameters.
-+     */
-+    public function testGenerateSecretApiInvalid()
-+    {
-+        $this->assertFalse(generate_api_secret('', ''));
-+        $this->assertFalse(generate_api_secret(false, false));
++        $str = ' foo   bar is   important ';
++        $this->assertEquals('foo bar is important', normalize_spaces($str));
++        $this->assertEquals('foo', normalize_spaces('foo'));
++        $this->assertEquals('', normalize_spaces(''));
++        $this->assertEquals(null, normalize_spaces(null));
 +    }
  }
