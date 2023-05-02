@@ -252,7 +252,8 @@ You use the community supported version of the original Shaarli project, by Seba
             ),
             'private' => 0,
             'created' => new DateTime(),
-            'tags' => 'opensource software'
+            'tags' => 'opensource software',
+            'sticky' => false,
         );
         $link['shorturl'] = link_small_hash($link['created'], $link['id']);
         $this->links[1] = $link;
@@ -265,6 +266,7 @@ You use the community supported version of the original Shaarli project, by Seba
             'private' => 1,
             'created' => new DateTime('1 minute ago'),
             'tags' => 'secretstuff',
+            'sticky' => false,
         );
         $link['shorturl'] = link_small_hash($link['created'], $link['id']);
         $this->links[0] = $link;

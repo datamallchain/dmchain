@@ -1,0 +1,10 @@
+diff a/src/shaarli/application/bookmark/LinkDB.php b/src/shaarli/application/bookmark/LinkDB.php	(rejected hunks)
+@@ -335,6 +337,8 @@ private function read()
+                 $link['real_url'] = $link['url'];
+             }
+ 
++            $link['sticky'] = isset($link['sticky']) ? $link['sticky'] : false;
++
+             // To be able to load links before running the update, and prepare the update
+             if (!isset($link['created'])) {
+                 $link['id'] = $link['linkdate'];
