@@ -1,0 +1,16 @@
+diff a/src/shaarli/application/LinkFilter.php b/src/shaarli/application/LinkFilter.php	(rejected hunks)
+@@ -33,12 +33,12 @@ class LinkFilter
+     public static $HASHTAG_CHARS = '\p{Pc}\p{N}\p{L}\p{Mn}';
+ 
+     /**
+-     * @var array all available links.
++     * @var LinkDB all available links.
+      */
+     private $links;
+ 
+     /**
+-     * @param array $links initialization.
++     * @param LinkDB $links initialization.
+      */
+     public function __construct($links)
+     {
