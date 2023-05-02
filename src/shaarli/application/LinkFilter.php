@@ -28,12 +28,17 @@ class LinkFilter
     public static $FILTER_DAY    = 'FILTER_DAY';
 
     /**
-     * @var array all available links.
+     * @var string Allowed characters for hashtags (regex syntax).
+     */
+    public static $HASHTAG_CHARS = '\p{Pc}\p{N}\p{L}\p{Mn}';
+
+    /**
+     * @var LinkDB all available links.
      */
     private $links;
 
     /**
-     * @param array $links initialization.
+     * @param LinkDB $links initialization.
      */
     public function __construct($links)
     {
@@ -260,8 +265,10 @@ class LinkFilter
             for ($i = 0 ; $i < count($searchtags) && $found; $i++) {
                 // Exclusive search, quit if tag found.
                 // Or, tag not found in the link, quit.
-                if (($searchtags[$i][0] == '-' && in_array(substr($searchtags[$i], 1), $linktags))
-                    || ($searchtags[$i][0] != '-') && ! in_array($searchtags[$i], $linktags)
+                if (($searchtags[$i][0] == '-'
+                        && $this->searchTagAndHashTag(substr($searchtags[$i], 1), $linktags, $link['description']))
+                    || ($searchtags[$i][0] != '-')
+                        && ! $this->searchTagAndHashTag($searchtags[$i], $linktags, $link['description'])
                 ) {
                     $found = false;
                 }
@@ -301,6 +308,28 @@ class LinkFilter
 
         // sort by date ASC
         return array_reverse($filtered, true);
+    }
+
+    /**
+     * Check if a tag is found in the taglist, or as an hashtag in the link description.
+     *
+     * @param string $tag         Tag to search.
+     * @param array  $taglist     List of tags for the current link.
+     * @param string $description Link description.
+     *
+     * @return bool True if found, false otherwise.
+     */
+    protected function searchTagAndHashTag($tag, $taglist, $description)
+    {
+        if (in_array($tag, $taglist)) {
+            return true;
+        }
+
+        if (preg_match('/(^| )#'. $tag .'([^'. self::$HASHTAG_CHARS .']|$)/mui', $description) > 0) {
+            return true;
+        }
+
+        return false;
     }
 
     /**

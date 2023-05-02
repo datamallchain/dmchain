@@ -85,6 +85,7 @@ class Url
         'action_type_map=',
         'fb_',
         'fb=',
+        'PHPSESSID=',
 
         // Scoop.it
         '__scoop',

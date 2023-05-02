@@ -454,7 +454,7 @@ You use the community supported version of the original Shaarli project, by Seba
         $searchterm = !empty($filterRequest['searchterm']) ? escape($filterRequest['searchterm']) : '';
 
         // Search tags + fullsearch.
-        if (empty($type) && ! empty($searchtags) && ! empty($searchterm)) {
+        if (! empty($searchtags) && ! empty($searchterm)) {
             $type = LinkFilter::$FILTER_TAG | LinkFilter::$FILTER_TEXT;
             $request = array($searchtags, $searchterm);
         }
@@ -485,11 +485,18 @@ You use the community supported version of the original Shaarli project, by Seba
     public function allTags()
     {
         $tags = array();
-        foreach ($this->_links as $link) {
-            foreach (explode(' ', $link['tags']) as $tag) {
-                if (!empty($tag)) {
-                    $tags[$tag] = (empty($tags[$tag]) ? 1 : $tags[$tag] + 1);
+        $caseMapping = array();
+        foreach ($this->links as $link) {
+            foreach (preg_split('/\s+/', $link['tags'], 0, PREG_SPLIT_NO_EMPTY) as $tag) {
+                if (empty($tag)) {
+                    continue;
                 }
+                // The first case found will be displayed.
+                if (!isset($caseMapping[strtolower($tag)])) {
+                    $caseMapping[strtolower($tag)] = $tag;
+                    $tags[$caseMapping[strtolower($tag)]] = 0;
+                }
+                $tags[$caseMapping[strtolower($tag)]]++;
             }
         }
         // Sort tags by usage (most used tag first)
