@@ -93,7 +93,7 @@ class ReferenceLinkDB
             'tags' => $tags,
             'created' => $date,
             'updated' => $updated,
-            'shorturl' => $shorturl ? $shorturl : smallHash($date->format('Ymd_His') . $id),
+            'shorturl' => $shorturl ? $shorturl : smallHash($date->format(LinkDB::LINK_DATE_FORMAT) . $id),
         );
         $this->_links[$id] = $link;
 

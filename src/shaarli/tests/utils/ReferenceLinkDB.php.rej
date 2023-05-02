@@ -1,99 +1,76 @@
 diff a/src/shaarli/tests/utils/ReferenceLinkDB.php b/src/shaarli/tests/utils/ReferenceLinkDB.php	(rejected hunks)
-@@ -16,66 +16,87 @@ class ReferenceLinkDB
-     public function __construct()
-     {
-         $this->addLink(
-+            41,
-             'Link title: @website',
+@@ -21,7 +21,7 @@ public function __construct()
              '?WDWyig',
              'Stallman has a beard and is part of the Free Software Foundation (or not). Seriously, read this. #hashtag',
              0,
--            '20150310_114651',
--            'sTuff'
-+            DateTime::createFromFormat('Ymd_His', '20150310_114651'),
-+            'sTuff',
-+            null,
-+            'WDWyig'
+-            DateTime::createFromFormat('Ymd_His', '20150310_114651'),
++            DateTime::createFromFormat(LinkDB::LINK_DATE_FORMAT, '20150310_114651'),
+             'sTuff',
+             null,
+             'WDWyig'
+@@ -33,7 +33,7 @@ public function __construct()
+             '?WDWyig',
+             'Used to test links reordering.',
+             0,
+-            DateTime::createFromFormat('Ymd_His', '20100310_101010'),
++            DateTime::createFromFormat(LinkDB::LINK_DATE_FORMAT, '20100310_101010'),
+             'ut'
          );
  
-         $this->addLink(
-+            42,
-+            'Note: I have a big ID but an old date',
-+            '?WDWyig',
-+            'Used to test links reordering.',
-+            0,
-+            DateTime::createFromFormat('Ymd_His', '20100310_101010'),
-+            'ut'
-+        );
-+
-+        $this->addLink(
-+            8,
-             'Free as in Freedom 2.0 @website',
+@@ -43,9 +43,9 @@ public function __construct()
              'https://static.fsf.org/nosvn/faif-2.0.pdf',
              'Richard Stallman and the Free Software Revolution. Read this. #hashtag',
              0,
--            '20150310_114633',
-+            DateTime::createFromFormat('Ymd_His', '20150310_114633'),
+-            DateTime::createFromFormat('Ymd_His', '20150310_114633'),
++            DateTime::createFromFormat(LinkDB::LINK_DATE_FORMAT, '20150310_114633'),
              'free gnu software stallman -exclude stuff hashtag',
--            '20160803_093033'
-+            DateTime::createFromFormat('Ymd_His', '20160803_093033')
+-            DateTime::createFromFormat('Ymd_His', '20160803_093033')
++            DateTime::createFromFormat(LinkDB::LINK_DATE_FORMAT, '20160803_093033')
          );
  
          $this->addLink(
-+            7,
-             'MediaGoblin',
+@@ -54,7 +54,7 @@ public function __construct()
              'http://mediagoblin.org/',
              'A free software media publishing platform #hashtagOther',
              0,
--            '20130614_184135',
--            'gnu media web .hidden hashtag'
-+            DateTime::createFromFormat('Ymd_His', '20130614_184135'),
-+            'gnu media web .hidden hashtag',
-+            null,
-+            'IuWvgA'
-         );
- 
-         $this->addLink(
-+            6,
-             'w3c-markup-validator',
+-            DateTime::createFromFormat('Ymd_His', '20130614_184135'),
++            DateTime::createFromFormat(LinkDB::LINK_DATE_FORMAT, '20130614_184135'),
+             'gnu media web .hidden hashtag',
+             null,
+             'IuWvgA'
+@@ -66,7 +66,7 @@ public function __construct()
              'https://dvcs.w3.org/hg/markup-validator/summary',
              'Mercurial repository for the W3C Validator #private',
              1,
--            '20141125_084734',
-+            DateTime::createFromFormat('Ymd_His', '20141125_084734'),
+-            DateTime::createFromFormat('Ymd_His', '20141125_084734'),
++            DateTime::createFromFormat(LinkDB::LINK_DATE_FORMAT, '20141125_084734'),
              'css html w3c web Mercurial'
          );
  
-         $this->addLink(
-+            4,
-             'UserFriendly - Web Designer',
+@@ -76,7 +76,7 @@ public function __construct()
              'http://ars.userfriendly.org/cartoons/?id=20121206',
              'Naming conventions... #private',
              0,
--            '20121206_142300',
-+            DateTime::createFromFormat('Ymd_His', '20121206_142300'),
+-            DateTime::createFromFormat('Ymd_His', '20121206_142300'),
++            DateTime::createFromFormat(LinkDB::LINK_DATE_FORMAT, '20121206_142300'),
              'dev cartoon web'
          );
  
-         $this->addLink(
-+            1,
-             'UserFriendly - Samba',
+@@ -86,7 +86,7 @@ public function __construct()
              'http://ars.userfriendly.org/cartoons/?id=20010306',
              'Tropical printing',
              0,
--            '20121206_172539',
-+            DateTime::createFromFormat('Ymd_His', '20121206_172539'),
+-            DateTime::createFromFormat('Ymd_His', '20121206_172539'),
++            DateTime::createFromFormat(LinkDB::LINK_DATE_FORMAT, '20121206_172539'),
              'samba cartoon web'
          );
  
-         $this->addLink(
-+            0,
-             'Geek and Poke',
+@@ -96,7 +96,7 @@ public function __construct()
              'http://geek-and-poke.com/',
              '',
              1,
--            '20121206_182539',
-+            DateTime::createFromFormat('Ymd_His', '20121206_182539'),
+-            DateTime::createFromFormat('Ymd_His', '20121206_182539'),
++            DateTime::createFromFormat(LinkDB::LINK_DATE_FORMAT, '20121206_182539'),
              'dev cartoon tag1  tag2   tag3  tag4   '
          );
      }
