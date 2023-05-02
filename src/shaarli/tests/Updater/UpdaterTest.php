@@ -282,17 +282,14 @@ $GLOBALS[\'privateLinkByDefault\'] = true;';
         $this->conf = new ConfigManager($sandbox);
         $title = '<script>alert("title");</script>';
         $headerLink = '<script>alert("header_link");</script>';
-        $redirectorUrl = '<script>alert("redirector");</script>';
         $this->conf->set('general.title', $title);
         $this->conf->set('general.header_link', $headerLink);
-        $this->conf->set('redirector.url', $redirectorUrl);
         $updater = new Updater(array(), array(), $this->conf, true);
         $done = $updater->updateMethodEscapeUnescapedConfig();
         $this->assertTrue($done);
         $this->conf->reload();
         $this->assertEquals(escape($title), $this->conf->get('general.title'));
         $this->assertEquals(escape($headerLink), $this->conf->get('general.header_link'));
-        $this->assertEquals(escape($redirectorUrl), $this->conf->get('redirector.url'));
         unlink($sandbox . '.json.php');
     }
 
@@ -702,7 +699,6 @@ $GLOBALS[\'privateLinkByDefault\'] = true;';
     }
 
     /**
-<<<<<<< HEAD
      * Test updateMethodWebThumbnailer with thumbnails enabled.
      */
     public function testUpdateMethodWebThumbnailerEnabled()
@@ -806,5 +802,20 @@ $GLOBALS[\'privateLinkByDefault\'] = true;';
 
         $linkDB = new LinkDB(self::$testDatastore, true, false);
         $this->assertTrue($linkDB[1]['sticky']);
+    }
+
+    /**
+     * Test updateMethodRemoveRedirector().
+     */
+    public function testUpdateRemoveRedirector()
+    {
+        $sandboxConf = 'sandbox/config';
+        copy(self::$configFile . '.json.php', $sandboxConf . '.json.php');
+        $this->conf = new ConfigManager($sandboxConf);
+        $updater = new Updater([], null, $this->conf, true);
+        $this->assertTrue($updater->updateMethodRemoveRedirector());
+        $this->assertFalse($this->conf->exists('redirector'));
+        $this->conf = new ConfigManager($sandboxConf);
+        $this->assertFalse($this->conf->exists('redirector'));
     }
 }
