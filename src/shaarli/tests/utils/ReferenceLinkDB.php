@@ -4,7 +4,7 @@
  */
 class ReferenceLinkDB
 {
-    public static $NB_LINKS_TOTAL = 7;
+    public static $NB_LINKS_TOTAL = 8;
 
     private $_links = array();
     private $_publicCount = 0;
@@ -82,18 +82,20 @@ class ReferenceLinkDB
     /**
      * Adds a new link
      */
-    protected function addLink($title, $url, $description, $private, $date, $tags, $updated = '')
+    protected function addLink($id, $title, $url, $description, $private, $date, $tags, $updated = '', $shorturl = '')
     {
         $link = array(
+            'id' => $id,
             'title' => $title,
             'url' => $url,
             'description' => $description,
             'private' => $private,
-            'linkdate' => $date,
             'tags' => $tags,
+            'created' => $date,
             'updated' => $updated,
+            'shorturl' => $shorturl ? $shorturl : smallHash($date->format('Ymd_His') . $id),
         );
-        $this->_links[$date] = $link;
+        $this->_links[$id] = $link;
 
         if ($private) {
             $this->_privateCount++;
@@ -140,5 +142,15 @@ class ReferenceLinkDB
     public function getLinks()
     {
         return $this->_links;
+    }
+
+    /**
+     * Setter to override link creation.
+     *
+     * @param array $links List of links.
+     */
+    public function setLinks($links)
+    {
+        $this->_links = $links;
     }
 }

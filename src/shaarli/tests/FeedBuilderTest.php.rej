@@ -1,0 +1,20 @@
+diff a/src/shaarli/tests/FeedBuilderTest.php b/src/shaarli/tests/FeedBuilderTest.php	(rejected hunks)
+@@ -99,14 +100,14 @@ public function testRSSBuildData()
+         $this->assertEquals('sTuff', $link['taglist'][0]);
+ 
+         // Test URL with external link.
+-        $this->assertEquals('https://static.fsf.org/nosvn/faif-2.0.pdf', $data['links']['20150310_114633']['url']);
++        $this->assertEquals('https://static.fsf.org/nosvn/faif-2.0.pdf', $data['links'][8]['url']);
+ 
+         // Test multitags.
+-        $this->assertEquals(5, count($data['links']['20141125_084734']['taglist']));
+-        $this->assertEquals('css', $data['links']['20141125_084734']['taglist'][0]);
++        $this->assertEquals(5, count($data['links'][6]['taglist']));
++        $this->assertEquals('css', $data['links'][6]['taglist'][0]);
+ 
+         // Test update date
+-        $this->assertRegExp('/2016-08-03T09:30:33\+\d{2}:\d{2}/', $data['links']['20150310_114633']['up_iso_date']);
++        $this->assertRegExp('/2016-08-03T09:30:33\+\d{2}:\d{2}/', $data['links'][8]['up_iso_date']);
+     }
+ 
+     /**
