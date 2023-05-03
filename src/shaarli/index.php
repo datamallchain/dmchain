@@ -62,6 +62,7 @@ require_once 'application/CachedPage.php';
 require_once 'application/config/ConfigPlugin.php';
 require_once 'application/FeedBuilder.php';
 require_once 'application/FileUtils.php';
+require_once 'application/History.php';
 require_once 'application/HttpUtils.php';
 require_once 'application/Languages.php';
 require_once 'application/LinkDB.php';
@@ -753,6 +754,12 @@ function renderPage($conf, $pluginManager, $LINKSDB)
         die($e->getMessage());
     }
 
+    try {
+        $history = new History($conf->get('resource.history'));
+    } catch(Exception $e) {
+        die($e->getMessage());
+    }
+
     $PAGE = new PageBuilder($conf);
     $PAGE->assign('linkcount', count($LINKSDB));
     $PAGE->assign('privateLinkcount', count_private($LINKSDB));
@@ -1145,6 +1152,7 @@ function renderPage($conf, $pluginManager, $LINKSDB)
             $conf->set('api.secret', escape($_POST['apiSecret']));
             try {
                 $conf->write(isLoggedIn());
+                $history->updateSettings();
                 invalidateCaches($conf->get('resource.page_cache'));
             }
             catch(Exception $e) {
@@ -1176,6 +1184,7 @@ function renderPage($conf, $pluginManager, $LINKSDB)
             $PAGE->assign('hide_public_links', $conf->get('privacy.hide_public_links', false));
             $PAGE->assign('api_enabled', $conf->get('api.enabled', true));
             $PAGE->assign('api_secret', $conf->get('api.secret'));
+            $history->updateSettings();
             $PAGE->renderPage('configure');
             exit;
         }
@@ -1205,6 +1214,7 @@ function renderPage($conf, $pluginManager, $LINKSDB)
                 unset($tags[array_search($needle,$tags)]); // Remove tag.
                 $value['tags']=trim(implode(' ',$tags));
                 $LINKSDB[$key]=$value;
+                $history->updateLink($LINKSDB[$key]);
             }
             $LINKSDB->save($conf->get('resource.page_cache'));
             echo '<script>alert("Tag was removed from '.count($linksToAlter).' links.");document.location=\'?do=changetag\';</script>';
@@ -1222,6 +1232,7 @@ function renderPage($conf, $pluginManager, $LINKSDB)
                 $tags[array_search($needle, $tags)] = trim($_POST['totag']);
                 $value['tags'] = implode(' ', array_unique($tags));
                 $LINKSDB[$key] = $value;
+                $history->updateLink($LINKSDB[$key]);
             }
             $LINKSDB->save($conf->get('resource.page_cache')); // Save to disk.
             echo '<script>alert("Tag was renamed in '.count($linksToAlter).' links.");document.location=\'?searchtags='.urlencode(escape($_POST['totag'])).'\';</script>';
@@ -1256,11 +1267,13 @@ function renderPage($conf, $pluginManager, $LINKSDB)
             $created = DateTime::createFromFormat(LinkDB::LINK_DATE_FORMAT, $linkdate);
             $updated = new DateTime();
             $shortUrl = $LINKSDB[$id]['shorturl'];
+            $new = false;
         } else {
             // New link
             $created = DateTime::createFromFormat(LinkDB::LINK_DATE_FORMAT, $linkdate);
             $updated = null;
             $shortUrl = link_small_hash($created, $id);
+            $new = true;
         }
 
         // Remove multiple spaces.
@@ -1299,6 +1312,11 @@ function renderPage($conf, $pluginManager, $LINKSDB)
 
         $LINKSDB[$id] = $link;
         $LINKSDB->save($conf->get('resource.page_cache'));
+        if ($new) {
+            $history->addLink($link);
+        } else {
+            $history->updateLink($link);
+        }
 
         // If we are called from the bookmarklet, we must close the popup:
         if (isset($_GET['source']) && ($_GET['source']=='bookmarklet' || $_GET['source']=='firefoxsocialapi')) {
@@ -1345,6 +1363,7 @@ function renderPage($conf, $pluginManager, $LINKSDB)
         $pluginManager->executeHooks('delete_link', $link);
         unset($LINKSDB[$id]);
         $LINKSDB->save($conf->get('resource.page_cache')); // save to disk
+        $history->deleteLink($link);
 
         // If we are called from the bookmarklet, we must close the popup:
         if (isset($_GET['source']) && ($_GET['source']=='bookmarklet' || $_GET['source']=='firefoxsocialapi')) { echo '<script>self.close();</script>'; exit; }
@@ -1527,7 +1546,8 @@ function renderPage($conf, $pluginManager, $LINKSDB)
             $_POST,
             $_FILES,
             $LINKSDB,
-            $conf
+            $conf,
+            $history
         );
         echo '<script>alert("'.$status.'");document.location=\'?do='
              .Router::$PAGE_IMPORT .'\';</script>';
@@ -1556,6 +1576,7 @@ function renderPage($conf, $pluginManager, $LINKSDB)
 
     // Plugin administration form action
     if ($targetPage == Router::$PAGE_SAVE_PLUGINSADMIN) {
+        $history->updateSettings();
         try {
             if (isset($_POST['parameters_form'])) {
                 unset($_POST['parameters_form']);
