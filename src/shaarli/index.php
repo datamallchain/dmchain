@@ -699,6 +699,7 @@ function showDaily($pageBuilder, $LINKSDB, $conf, $pluginManager)
         'linksToDisplay' => $linksToDisplay,
         'cols' => $columns,
         'day' => $dayDate->getTimestamp(),
+        'dayDate' => $dayDate,
         'previousday' => $previousday,
         'nextday' => $nextday,
     );
