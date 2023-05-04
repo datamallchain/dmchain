@@ -1,19 +1,26 @@
 <?php
+namespace Shaarli\Updater;
 
-use Shaarli\Bookmark\LinkDB;
+use DateTime;
+use Exception;
+use Shaarli\Bookmark\Bookmark;
 use Shaarli\Config\ConfigJson;
 use Shaarli\Config\ConfigManager;
 use Shaarli\Config\ConfigPhp;
+use Shaarli\Legacy\LegacyLinkDB;
+use Shaarli\Legacy\LegacyUpdater;
 use Shaarli\Thumbnailer;
 
-require_once 'tests/Updater/DummyUpdater.php';
+require_once 'application/updater/UpdaterUtils.php';
+require_once 'tests/updater/DummyUpdater.php';
+require_once 'tests/utils/ReferenceLinkDB.php';
 require_once 'inc/rain.tpl.class.php';
 
 /**
  * Class UpdaterTest.
- * Runs unit tests against the Updater class.
+ * Runs unit tests against the updater class.
  */
-class UpdaterTest extends PHPUnit_Framework_TestCase
+class LegacyUpdaterTest extends \PHPUnit\Framework\TestCase
 {
     /**
      * @var string Path to test datastore.
@@ -155,7 +162,7 @@ class UpdaterTest extends PHPUnit_Framework_TestCase
     /**
      * Test Update failed.
      *
-     * @expectedException UpdaterException
+     * @expectedException \Exception
      */
     public function testUpdateFailed()
     {
@@ -181,17 +188,17 @@ class UpdaterTest extends PHPUnit_Framework_TestCase
         $this->conf->setConfigFile('tests/utils/config/configPhp');
         $this->conf->reset();
 
-        $optionsFile = 'tests/Updater/options.php';
+        $optionsFile = 'tests/updater/options.php';
         $options = '<?php
 $GLOBALS[\'privateLinkByDefault\'] = true;';
         file_put_contents($optionsFile, $options);
 
         // tmp config file.
-        $this->conf->setConfigFile('tests/Updater/config');
+        $this->conf->setConfigFile('tests/updater/config');
 
         // merge configs
-        $updater = new Updater(array(), array(), $this->conf, true);
-        // This writes a new config file in tests/Updater/config.php
+        $updater = new LegacyUpdater(array(), array(), $this->conf, true);
+        // This writes a new config file in tests/updater/config.php
         $updater->updateMethodMergeDeprecatedConfigFile();
 
         // make sure updated field is changed
@@ -207,7 +214,7 @@ $GLOBALS[\'privateLinkByDefault\'] = true;';
      */
     public function testMergeDeprecatedConfigNoFile()
     {
-        $updater = new Updater(array(), array(), $this->conf, true);
+        $updater = new LegacyUpdater(array(), array(), $this->conf, true);
         $updater->updateMethodMergeDeprecatedConfigFile();
 
         $this->assertEquals('root', $this->conf->get('credentials.login'));
@@ -218,12 +225,12 @@ $GLOBALS[\'privateLinkByDefault\'] = true;';
      */
     public function testRenameDashTags()
     {
-        $refDB = new ReferenceLinkDB();
+        $refDB = new \ReferenceLinkDB(true);
         $refDB->write(self::$testDatastore);
-        $linkDB = new LinkDB(self::$testDatastore, true, false);
+        $linkDB = new LegacyLinkDB(self::$testDatastore, true, false);
 
         $this->assertEmpty($linkDB->filterSearch(array('searchtags' => 'exclude')));
-        $updater = new Updater(array(), $linkDB, $this->conf, true);
+        $updater = new LegacyUpdater(array(), $linkDB, $this->conf, true);
         $updater->updateMethodRenameDashTags();
         $this->assertNotEmpty($linkDB->filterSearch(array('searchtags' =>  'exclude')));
     }
@@ -240,7 +247,7 @@ $GLOBALS[\'privateLinkByDefault\'] = true;';
         // The ConfigIO is initialized with ConfigPhp.
         $this->assertTrue($this->conf->getConfigIO() instanceof ConfigPhp);
 
-        $updater = new Updater(array(), array(), $this->conf, false);
+        $updater = new LegacyUpdater(array(), array(), $this->conf, false);
         $done = $updater->updateMethodConfigToJson();
         $this->assertTrue($done);
 
@@ -265,7 +272,7 @@ $GLOBALS[\'privateLinkByDefault\'] = true;';
     public function testConfigToJsonNothingToDo()
     {
         $filetime = filemtime($this->conf->getConfigFileExt());
-        $updater = new Updater(array(), array(), $this->conf, false);
+        $updater = new LegacyUpdater(array(), array(), $this->conf, false);
         $done = $updater->updateMethodConfigToJson();
         $this->assertTrue($done);
         $expected = filemtime($this->conf->getConfigFileExt());
@@ -284,7 +291,7 @@ $GLOBALS[\'privateLinkByDefault\'] = true;';
         $headerLink = '<script>alert("header_link");</script>';
         $this->conf->set('general.title', $title);
         $this->conf->set('general.header_link', $headerLink);
-        $updater = new Updater(array(), array(), $this->conf, true);
+        $updater = new LegacyUpdater(array(), array(), $this->conf, true);
         $done = $updater->updateMethodEscapeUnescapedConfig();
         $this->assertTrue($done);
         $this->conf->reload();
@@ -301,7 +308,7 @@ $GLOBALS[\'privateLinkByDefault\'] = true;';
         $confFile = 'sandbox/config';
         copy(self::$configFile .'.json.php', $confFile .'.json.php');
         $conf = new ConfigManager($confFile);
-        $updater = new Updater(array(), array(), $conf, true);
+        $updater = new LegacyUpdater(array(), array(), $conf, true);
 
         $this->assertFalse($conf->exists('api.enabled'));
         $this->assertFalse($conf->exists('api.secret'));
@@ -322,7 +329,7 @@ $GLOBALS[\'privateLinkByDefault\'] = true;';
         $conf = new ConfigManager($confFile);
         $conf->set('api.enabled', false);
         $conf->set('api.secret', '');
-        $updater = new Updater(array(), array(), $conf, true);
+        $updater = new LegacyUpdater(array(), array(), $conf, true);
         $updater->updateMethodApiSettings();
         $this->assertFalse($conf->get('api.enabled'));
         $this->assertEmpty($conf->get('api.secret'));
@@ -361,24 +368,29 @@ $GLOBALS[\'privateLinkByDefault\'] = true;';
                 'private' => true,
             ),
         );
-        $refDB = new ReferenceLinkDB();
+        $refDB = new \ReferenceLinkDB(true);
         $refDB->setLinks($links);
         $refDB->write(self::$testDatastore);
-        $linkDB = new LinkDB(self::$testDatastore, true, false);
+        $linkDB = new LegacyLinkDB(self::$testDatastore, true, false);
 
         $checksum = hash_file('sha1', self::$testDatastore);
 
         $this->conf->set('resource.data_dir', 'sandbox');
         $this->conf->set('resource.datastore', self::$testDatastore);
 
-        $updater = new Updater(array(), $linkDB, $this->conf, true);
+        $updater = new LegacyUpdater(array(), $linkDB, $this->conf, true);
         $this->assertTrue($updater->updateMethodDatastoreIds());
 
-        $linkDB = new LinkDB(self::$testDatastore, true, false);
+        $linkDB = new LegacyLinkDB(self::$testDatastore, true, false);
 
-        $backup = glob($this->conf->get('resource.data_dir') . '/datastore.'. date('YmdH') .'*.php');
-        $backup = $backup[0];
-
+        $backupFiles = glob($this->conf->get('resource.data_dir') . '/datastore.'. date('YmdH') .'*.php');
+        $backup = null;
+        foreach ($backupFiles as $backupFile) {
+            if (strpos($backupFile, '_1') === false) {
+                $backup = $backupFile;
+            }
+        }
+        $this->assertNotNull($backup);
         $this->assertFileExists($backup);
         $this->assertEquals($checksum, hash_file('sha1', $backup));
         unlink($backup);
@@ -393,7 +405,7 @@ $GLOBALS[\'privateLinkByDefault\'] = true;';
         $this->assertEquals('samba cartoon web', $linkDB[0]['tags']);
         $this->assertTrue($linkDB[0]['private']);
         $this->assertEquals(
-            DateTime::createFromFormat(LinkDB::LINK_DATE_FORMAT, '20121206_142300'),
+            DateTime::createFromFormat(Bookmark::LINK_DATE_FORMAT, '20121206_142300'),
             $linkDB[0]['created']
         );
 
@@ -402,7 +414,7 @@ $GLOBALS[\'privateLinkByDefault\'] = true;';
         $this->assertEquals(1, $linkDB[1]['id']);
         $this->assertEquals('UserFriendly - Samba', $linkDB[1]['title']);
         $this->assertEquals(
-            DateTime::createFromFormat(LinkDB::LINK_DATE_FORMAT, '20121206_172539'),
+            DateTime::createFromFormat(Bookmark::LINK_DATE_FORMAT, '20121206_172539'),
             $linkDB[1]['created']
         );
 
@@ -411,11 +423,11 @@ $GLOBALS[\'privateLinkByDefault\'] = true;';
         $this->assertEquals(2, $linkDB[2]['id']);
         $this->assertEquals('Geek and Poke', $linkDB[2]['title']);
         $this->assertEquals(
-            DateTime::createFromFormat(LinkDB::LINK_DATE_FORMAT, '20121206_182539'),
+            DateTime::createFromFormat(Bookmark::LINK_DATE_FORMAT, '20121206_182539'),
             $linkDB[2]['created']
         );
         $this->assertEquals(
-            DateTime::createFromFormat(LinkDB::LINK_DATE_FORMAT, '20121206_190301'),
+            DateTime::createFromFormat(Bookmark::LINK_DATE_FORMAT, '20121206_190301'),
             $linkDB[2]['updated']
         );
     }
@@ -425,15 +437,15 @@ $GLOBALS[\'privateLinkByDefault\'] = true;';
      */
     public function testDatastoreIdsNothingToDo()
     {
-        $refDB = new ReferenceLinkDB();
+        $refDB = new \ReferenceLinkDB(true);
         $refDB->write(self::$testDatastore);
-        $linkDB = new LinkDB(self::$testDatastore, true, false);
+        $linkDB = new LegacyLinkDB(self::$testDatastore, true, false);
 
         $this->conf->set('resource.data_dir', 'sandbox');
         $this->conf->set('resource.datastore', self::$testDatastore);
 
         $checksum = hash_file('sha1', self::$testDatastore);
-        $updater = new Updater(array(), $linkDB, $this->conf, true);
+        $updater = new LegacyUpdater(array(), $linkDB, $this->conf, true);
         $this->assertTrue($updater->updateMethodDatastoreIds());
         $this->assertEquals($checksum, hash_file('sha1', self::$testDatastore));
     }
@@ -446,7 +458,7 @@ $GLOBALS[\'privateLinkByDefault\'] = true;';
         $sandbox = 'sandbox/config';
         copy(self::$configFile . '.json.php', $sandbox . '.json.php');
         $this->conf = new ConfigManager($sandbox);
-        $updater = new Updater([], [], $this->conf, true);
+        $updater = new LegacyUpdater([], [], $this->conf, true);
         $this->assertTrue($updater->updateMethodDefaultTheme());
 
         $this->assertEquals('tpl/', $this->conf->get('resource.raintpl_tpl'));
@@ -469,7 +481,7 @@ $GLOBALS[\'privateLinkByDefault\'] = true;';
         mkdir('sandbox/'. $theme);
         touch('sandbox/'. $theme .'/linklist.html');
         $this->conf->set('resource.raintpl_tpl', 'sandbox/'. $theme .'/');
-        $updater = new Updater([], [], $this->conf, true);
+        $updater = new LegacyUpdater([], [], $this->conf, true);
         $this->assertTrue($updater->updateMethodDefaultTheme());
 
         $this->assertEquals('sandbox', $this->conf->get('resource.raintpl_tpl'));
@@ -493,7 +505,7 @@ $GLOBALS[\'privateLinkByDefault\'] = true;';
         $this->conf = new ConfigManager($sandboxConf);
 
         $this->conf->set('general.enabled_plugins', ['markdown']);
-        $updater = new Updater([], [], $this->conf, true);
+        $updater = new LegacyUpdater([], [], $this->conf, true);
         $this->assertTrue($updater->updateMethodEscapeMarkdown());
         $this->assertFalse($this->conf->get('security.markdown_escape'));
 
@@ -514,7 +526,7 @@ $GLOBALS[\'privateLinkByDefault\'] = true;';
         $this->conf = new ConfigManager($sandboxConf);
 
         $this->conf->set('general.enabled_plugins', []);
-        $updater = new Updater([], [], $this->conf, true);
+        $updater = new LegacyUpdater([], [], $this->conf, true);
         $this->assertTrue($updater->updateMethodEscapeMarkdown());
         $this->assertTrue($this->conf->get('security.markdown_escape'));
 
@@ -532,7 +544,7 @@ $GLOBALS[\'privateLinkByDefault\'] = true;';
         copy(self::$configFile . '.json.php', $sandboxConf . '.json.php');
         $this->conf = new ConfigManager($sandboxConf);
         $this->conf->set('security.markdown_escape', true);
-        $updater = new Updater([], [], $this->conf, true);
+        $updater = new LegacyUpdater([], [], $this->conf, true);
         $this->assertTrue($updater->updateMethodEscapeMarkdown());
         $this->assertTrue($this->conf->get('security.markdown_escape'));
     }
@@ -543,7 +555,7 @@ $GLOBALS[\'privateLinkByDefault\'] = true;';
     public function testEscapeMarkdownSettingNothingToDoDisabled()
     {
         $this->conf->set('security.markdown_escape', false);
-        $updater = new Updater([], [], $this->conf, true);
+        $updater = new LegacyUpdater([], [], $this->conf, true);
         $this->assertTrue($updater->updateMethodEscapeMarkdown());
         $this->assertFalse($this->conf->get('security.markdown_escape'));
     }
@@ -558,7 +570,7 @@ $GLOBALS[\'privateLinkByDefault\'] = true;';
         $this->conf = new ConfigManager($sandboxConf);
         $url = 'mypiwik.tld';
         $this->conf->set('plugins.PIWIK_URL', $url);
-        $updater = new Updater([], [], $this->conf, true);
+        $updater = new LegacyUpdater([], [], $this->conf, true);
         $this->assertTrue($updater->updateMethodPiwikUrl());
         $this->assertEquals('http://'. $url, $this->conf->get('plugins.PIWIK_URL'));
 
@@ -572,7 +584,7 @@ $GLOBALS[\'privateLinkByDefault\'] = true;';
      */
     public function testUpdatePiwikUrlEmpty()
     {
-        $updater = new Updater([], [], $this->conf, true);
+        $updater = new LegacyUpdater([], [], $this->conf, true);
         $this->assertTrue($updater->updateMethodPiwikUrl());
         $this->assertEmpty($this->conf->get('plugins.PIWIK_URL'));
     }
@@ -584,7 +596,7 @@ $GLOBALS[\'privateLinkByDefault\'] = true;';
     {
         $url = 'https://mypiwik.tld';
         $this->conf->set('plugins.PIWIK_URL', $url);
-        $updater = new Updater([], [], $this->conf, true);
+        $updater = new LegacyUpdater([], [], $this->conf, true);
         $this->assertTrue($updater->updateMethodPiwikUrl());
         $this->assertEquals($url, $this->conf->get('plugins.PIWIK_URL'));
     }
@@ -599,7 +611,7 @@ $GLOBALS[\'privateLinkByDefault\'] = true;';
         copy(self::$configFile . '.json.php', $sandboxConf . '.json.php');
         $this->conf = new ConfigManager($sandboxConf);
         $this->conf->set('feed.show_atom', false);
-        $updater = new Updater([], [], $this->conf, true);
+        $updater = new LegacyUpdater([], [], $this->conf, true);
         $this->assertTrue($updater->updateMethodAtomDefault());
         $this->assertTrue($this->conf->get('feed.show_atom'));
         // reload from file
@@ -615,7 +627,7 @@ $GLOBALS[\'privateLinkByDefault\'] = true;';
         $sandboxConf = 'sandbox/config';
         copy(self::$configFile . '.json.php', $sandboxConf . '.json.php');
         $this->conf = new ConfigManager($sandboxConf);
-        $updater = new Updater([], [], $this->conf, true);
+        $updater = new LegacyUpdater([], [], $this->conf, true);
         $this->assertTrue($updater->updateMethodAtomDefault());
         $this->assertTrue($this->conf->get('feed.show_atom'));
     }
@@ -629,7 +641,7 @@ $GLOBALS[\'privateLinkByDefault\'] = true;';
         copy(self::$configFile . '.json.php', $sandboxConf . '.json.php');
         $this->conf = new ConfigManager($sandboxConf);
         $this->conf->set('feed.show_atom', true);
-        $updater = new Updater([], [], $this->conf, true);
+        $updater = new LegacyUpdater([], [], $this->conf, true);
         $this->assertTrue($updater->updateMethodAtomDefault());
         $this->assertTrue($this->conf->get('feed.show_atom'));
     }
@@ -642,7 +654,7 @@ $GLOBALS[\'privateLinkByDefault\'] = true;';
         $sandboxConf = 'sandbox/config';
         copy(self::$configFile . '.json.php', $sandboxConf . '.json.php');
         $this->conf = new ConfigManager($sandboxConf);
-        $updater = new Updater([], [], $this->conf, true);
+        $updater = new LegacyUpdater([], [], $this->conf, true);
         $this->assertTrue($updater->updateMethodDownloadSizeAndTimeoutConf());
         $this->assertEquals(4194304, $this->conf->get('general.download_max_size'));
         $this->assertEquals(30, $this->conf->get('general.download_timeout'));
@@ -662,7 +674,7 @@ $GLOBALS[\'privateLinkByDefault\'] = true;';
         $this->conf = new ConfigManager($sandboxConf);
         $this->conf->set('general.download_max_size', 38);
         $this->conf->set('general.download_timeout', 70);
-        $updater = new Updater([], [], $this->conf, true);
+        $updater = new LegacyUpdater([], [], $this->conf, true);
         $this->assertTrue($updater->updateMethodDownloadSizeAndTimeoutConf());
         $this->assertEquals(38, $this->conf->get('general.download_max_size'));
         $this->assertEquals(70, $this->conf->get('general.download_timeout'));
@@ -677,7 +689,7 @@ $GLOBALS[\'privateLinkByDefault\'] = true;';
         copy(self::$configFile . '.json.php', $sandboxConf . '.json.php');
         $this->conf = new ConfigManager($sandboxConf);
         $this->conf->set('general.download_max_size', 38);
-        $updater = new Updater([], [], $this->conf, true);
+        $updater = new LegacyUpdater([], [], $this->conf, true);
         $this->assertTrue($updater->updateMethodDownloadSizeAndTimeoutConf());
         $this->assertEquals(38, $this->conf->get('general.download_max_size'));
         $this->assertEquals(30, $this->conf->get('general.download_timeout'));
@@ -692,7 +704,7 @@ $GLOBALS[\'privateLinkByDefault\'] = true;';
         copy(self::$configFile . '.json.php', $sandboxConf . '.json.php');
         $this->conf = new ConfigManager($sandboxConf);
         $this->conf->set('general.download_timeout', 3);
-        $updater = new Updater([], [], $this->conf, true);
+        $updater = new LegacyUpdater([], [], $this->conf, true);
         $this->assertTrue($updater->updateMethodDownloadSizeAndTimeoutConf());
         $this->assertEquals(4194304, $this->conf->get('general.download_max_size'));
         $this->assertEquals(3, $this->conf->get('general.download_timeout'));
@@ -705,7 +717,7 @@ $GLOBALS[\'privateLinkByDefault\'] = true;';
     {
         $this->conf->remove('thumbnails');
         $this->conf->set('thumbnail.enable_thumbnails', true);
-        $updater = new Updater([], [], $this->conf, true, $_SESSION);
+        $updater = new LegacyUpdater([], [], $this->conf, true, $_SESSION);
         $this->assertTrue($updater->updateMethodWebThumbnailer());
         $this->assertFalse($this->conf->exists('thumbnail'));
         $this->assertEquals(\Shaarli\Thumbnailer::MODE_ALL, $this->conf->get('thumbnails.mode'));
@@ -722,9 +734,10 @@ $GLOBALS[\'privateLinkByDefault\'] = true;';
         if (isset($_SESSION['warnings'])) {
             unset($_SESSION['warnings']);
         }
+
         $this->conf->remove('thumbnails');
         $this->conf->set('thumbnail.enable_thumbnails', false);
-        $updater = new Updater([], [], $this->conf, true, $_SESSION);
+        $updater = new LegacyUpdater([], [], $this->conf, true, $_SESSION);
         $this->assertTrue($updater->updateMethodWebThumbnailer());
         $this->assertFalse($this->conf->exists('thumbnail'));
         $this->assertEquals(Thumbnailer::MODE_NONE, $this->conf->get('thumbnails.mode'));
@@ -741,7 +754,8 @@ $GLOBALS[\'privateLinkByDefault\'] = true;';
         if (isset($_SESSION['warnings'])) {
             unset($_SESSION['warnings']);
         }
-        $updater = new Updater([], [], $this->conf, true, $_SESSION);
+        
+        $updater = new LegacyUpdater([], [], $this->conf, true, $_SESSION);
         $this->assertTrue($updater->updateMethodWebThumbnailer());
         $this->assertFalse($this->conf->exists('thumbnail'));
         $this->assertEquals(Thumbnailer::MODE_COMMON, $this->conf->get('thumbnails.mode'));
@@ -767,15 +781,15 @@ $GLOBALS[\'privateLinkByDefault\'] = true;';
             1 => ['id' => 1] + $blank,
             2 => ['id' => 2] + $blank,
         ];
-        $refDB = new ReferenceLinkDB();
+        $refDB = new \ReferenceLinkDB(true);
         $refDB->setLinks($links);
         $refDB->write(self::$testDatastore);
-        $linkDB = new LinkDB(self::$testDatastore, true, false);
+        $linkDB = new LegacyLinkDB(self::$testDatastore, true, false);
 
-        $updater = new Updater(array(), $linkDB, $this->conf, true);
+        $updater = new LegacyUpdater(array(), $linkDB, $this->conf, true);
         $this->assertTrue($updater->updateMethodSetSticky());
 
-        $linkDB = new LinkDB(self::$testDatastore, true, false);
+        $linkDB = new LegacyLinkDB(self::$testDatastore, true, false);
         foreach ($linkDB as $link) {
             $this->assertFalse($link['sticky']);
         }
@@ -798,15 +812,15 @@ $GLOBALS[\'privateLinkByDefault\'] = true;';
             1 => ['id' => 1, 'sticky' => true] + $blank,
             2 => ['id' => 2] + $blank,
         ];
-        $refDB = new ReferenceLinkDB();
+        $refDB = new \ReferenceLinkDB(true);
         $refDB->setLinks($links);
         $refDB->write(self::$testDatastore);
-        $linkDB = new LinkDB(self::$testDatastore, true, false);
+        $linkDB = new LegacyLinkDB(self::$testDatastore, true, false);
 
-        $updater = new Updater(array(), $linkDB, $this->conf, true);
+        $updater = new LegacyUpdater(array(), $linkDB, $this->conf, true);
         $this->assertTrue($updater->updateMethodSetSticky());
 
-        $linkDB = new LinkDB(self::$testDatastore, true, false);
+        $linkDB = new LegacyLinkDB(self::$testDatastore, true, false);
         $this->assertTrue($linkDB[1]['sticky']);
     }
 
@@ -818,10 +832,55 @@ $GLOBALS[\'privateLinkByDefault\'] = true;';
         $sandboxConf = 'sandbox/config';
         copy(self::$configFile . '.json.php', $sandboxConf . '.json.php');
         $this->conf = new ConfigManager($sandboxConf);
-        $updater = new Updater([], null, $this->conf, true);
+        $updater = new LegacyUpdater([], null, $this->conf, true);
         $this->assertTrue($updater->updateMethodRemoveRedirector());
         $this->assertFalse($this->conf->exists('redirector'));
         $this->conf = new ConfigManager($sandboxConf);
         $this->assertFalse($this->conf->exists('redirector'));
+    }
+
+    /**
+     * Test updateMethodFormatterSetting()
+     */
+    public function testUpdateMethodFormatterSettingDefault()
+    {
+        $sandboxConf = 'sandbox/config';
+        copy(self::$configFile . '.json.php', $sandboxConf . '.json.php');
+        $this->conf = new ConfigManager($sandboxConf);
+        $this->conf->set('formatter', 'default');
+        $updater = new LegacyUpdater([], null, $this->conf, true);
+        $enabledPlugins = $this->conf->get('general.enabled_plugins');
+        $this->assertFalse(in_array('markdown', $enabledPlugins));
+        $this->assertTrue($updater->updateMethodFormatterSetting());
+        $this->assertEquals('default', $this->conf->get('formatter'));
+        $this->assertEquals($enabledPlugins, $this->conf->get('general.enabled_plugins'));
+
+        $this->conf = new ConfigManager($sandboxConf);
+        $this->assertEquals('default', $this->conf->get('formatter'));
+        $this->assertEquals($enabledPlugins, $this->conf->get('general.enabled_plugins'));
+    }
+
+    /**
+     * Test updateMethodFormatterSetting()
+     */
+    public function testUpdateMethodFormatterSettingMarkdown()
+    {
+        $sandboxConf = 'sandbox/config';
+        copy(self::$configFile . '.json.php', $sandboxConf . '.json.php');
+        $this->conf = new ConfigManager($sandboxConf);
+        $this->conf->set('formatter', 'default');
+        $updater = new LegacyUpdater([], null, $this->conf, true);
+        $enabledPlugins = $this->conf->get('general.enabled_plugins');
+        $enabledPlugins[] = 'markdown';
+        $this->conf->set('general.enabled_plugins', $enabledPlugins);
+
+        $this->assertTrue(in_array('markdown', $this->conf->get('general.enabled_plugins')));
+        $this->assertTrue($updater->updateMethodFormatterSetting());
+        $this->assertEquals('markdown', $this->conf->get('formatter'));
+        $this->assertFalse(in_array('markdown', $this->conf->get('general.enabled_plugins')));
+
+        $this->conf = new ConfigManager($sandboxConf);
+        $this->assertEquals('markdown', $this->conf->get('formatter'));
+        $this->assertFalse(in_array('markdown', $this->conf->get('general.enabled_plugins')));
     }
 }

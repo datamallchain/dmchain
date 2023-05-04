@@ -623,7 +623,7 @@ function renderPage($conf, $pluginManager, $bookmarkService, $history, $sessionM
         // Get only bookmarks which have a thumbnail.
         // Note: we do not retrieve thumbnails here, the request is too heavy.
         $factory = new FormatterFactory($conf);
-    $formatter = $factory->getFormatter();
+        $formatter = $factory->getFormatter();
         foreach ($links as $key => $link) {
             if ($link->getThumbnail() !== false) {
                 $linksToDisplay[] = $formatter->format($link);
@@ -749,7 +749,7 @@ function renderPage($conf, $pluginManager, $bookmarkService, $history, $sessionM
         // Generate data.
         $feedGenerator = new FeedBuilder(
             $bookmarkService,
-            $factory->getFormatter('raw'),
+            $factory->getFormatter(),
             $feedType,
             $_SERVER,
             $_GET,
@@ -1444,7 +1444,7 @@ function renderPage($conf, $pluginManager, $bookmarkService, $history, $sessionM
 
         try {
             $factory = new FormatterFactory($conf);
-        $formatter = $factory->getFormatter('raw');
+            $formatter = $factory->getFormatter('raw');
             $PAGE->assign(
                 'links',
                 NetscapeBookmarkUtils::filterAndFormat(

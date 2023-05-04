@@ -1,26 +1,30 @@
 <?php
+namespace Shaarli\Updater;
 
-use Shaarli\Bookmark\LinkDB;
-
-require_once 'application/Updater.php';
+use Exception;
+use ReflectionClass;
+use ReflectionMethod;
+use Shaarli\Config\ConfigManager;
+use Shaarli\Legacy\LegacyLinkDB;
+use Shaarli\Legacy\LegacyUpdater;
 
 /**
- * Class DummyUpdater.
- * Extends Updater to add update method designed for unit tests.
+ * Class LegacyDummyUpdater.
+ * Extends updater to add update method designed for unit tests.
  */
-class DummyUpdater extends Updater
+class LegacyDummyUpdater extends LegacyUpdater
 {
     /**
      * Object constructor.
      *
-     * @param array               $doneUpdates     Updates which are already done.
-     * @param BookmarkFileService $bookmarkService LinkDB instance.
-     * @param ConfigManager       $conf            Configuration Manager instance.
-     * @param boolean             $isLoggedIn      True if the user is logged in.
+     * @param array         $doneUpdates Updates which are already done.
+     * @param LegacyLinkDB  $linkDB      LinkDB instance.
+     * @param ConfigManager $conf        Configuration Manager instance.
+     * @param boolean       $isLoggedIn  True if the user is logged in.
      */
-    public function __construct($doneUpdates, $bookmarkService, $conf, $isLoggedIn)
+    public function __construct($doneUpdates, $linkDB, $conf, $isLoggedIn)
     {
-        parent::__construct($doneUpdates, $bookmarkService, $conf, $isLoggedIn);
+        parent::__construct($doneUpdates, $linkDB, $conf, $isLoggedIn);
 
         // Retrieve all update methods.
         // For unit test, only retrieve final methods,

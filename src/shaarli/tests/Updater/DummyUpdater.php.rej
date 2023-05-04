@@ -1,0 +1,9 @@
+diff a/src/shaarli/tests/updater/DummyUpdater.php b/src/shaarli/tests/updater/DummyUpdater.php	(rejected hunks)
+@@ -4,6 +4,7 @@
+ use Exception;
+ use ReflectionClass;
+ use ReflectionMethod;
++use Shaarli\Bookmark\BookmarkFileService;
+ use Shaarli\Bookmark\LinkDB;
+ use Shaarli\Config\ConfigManager;
+ 
