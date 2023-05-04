@@ -9,6 +9,7 @@ use Iterator;
 use Shaarli\Bookmark\Exception\BookmarkNotFoundException;
 use Shaarli\Exceptions\IOException;
 use Shaarli\FileUtils;
+use Shaarli\Render\PageCacheManager;
 
 /**
  * Data storage for bookmarks.
@@ -350,7 +351,8 @@ You use the community supported version of the original Shaarli project, by Seba
 
         $this->write();
 
-        invalidateCaches($pageCacheDir);
+        $pageCacheManager = new PageCacheManager($pageCacheDir);
+        $pageCacheManager->invalidateCaches();
     }
 
     /**
