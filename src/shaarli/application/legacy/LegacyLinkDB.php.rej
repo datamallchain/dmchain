@@ -1,0 +1,10 @@
+diff a/src/shaarli/application/legacy/LegacyLinkDB.php b/src/shaarli/application/legacy/LegacyLinkDB.php	(rejected hunks)
+@@ -310,7 +312,7 @@ private function read()
+ 
+             $link['sticky'] = isset($link['sticky']) ? $link['sticky'] : false;
+ 
+-            // To be able to load links before running the update, and prepare the update
++            // To be able to load bookmarks before running the update, and prepare the update
+             if (!isset($link['created'])) {
+                 $link['id'] = $link['linkdate'];
+                 $link['created'] = DateTime::createFromFormat(self::LINK_DATE_FORMAT, $link['linkdate']);
