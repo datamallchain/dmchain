@@ -61,30 +61,15 @@ require_once 'application/TimeZone.php';
 require_once 'application/Utils.php';
 
 use Shaarli\ApplicationUtils;
-use Shaarli\Bookmark\Bookmark;
 use Shaarli\Bookmark\BookmarkFileService;
-use Shaarli\Bookmark\BookmarkFilter;
-use Shaarli\Bookmark\BookmarkServiceInterface;
-use Shaarli\Bookmark\Exception\BookmarkNotFoundException;
 use Shaarli\Config\ConfigManager;
 use Shaarli\Container\ContainerBuilder;
-use Shaarli\Feed\CachedPage;
-use Shaarli\Feed\FeedBuilder;
-use Shaarli\Formatter\BookmarkMarkdownFormatter;
-use Shaarli\Formatter\FormatterFactory;
 use Shaarli\History;
 use Shaarli\Languages;
-use Shaarli\Netscape\NetscapeBookmarkUtils;
 use Shaarli\Plugin\PluginManager;
 use Shaarli\Render\PageBuilder;
-use Shaarli\Render\PageCacheManager;
-use Shaarli\Render\ThemeUtils;
-use Shaarli\Router;
 use Shaarli\Security\LoginManager;
 use Shaarli\Security\SessionManager;
-use Shaarli\Thumbnailer;
-use Shaarli\Updater\Updater;
-use Shaarli\Updater\UpdaterUtils;
 use Slim\App;
 
 // Ensure the PHP version is supported
@@ -195,20 +180,6 @@ if (! is_file($conf->getConfigFileExt())) {
 }
 
 $loginManager->checkLoginState($_COOKIE, $clientIpId);
-
-/**
- * Adapter function to ensure compatibility with third-party templates
- *
- * @see https://github.com/shaarli/Shaarli/pull/1086
- *
- * @return bool true when the user is logged in, false otherwise
- */
-function isLoggedIn()
-{
-    global $loginManager;
-    return $loginManager->isLoggedIn();
-}
-
 
 // ------------------------------------------------------------------------------------------
 // Process login form: Check if login/password is correct.
@@ -972,19 +943,6 @@ if (!isset($_SESSION['LINKS_PER_PAGE'])) {
     $_SESSION['LINKS_PER_PAGE'] = $conf->get('general.links_per_page', 20);
 }
 
-try {
-    $history = new History($conf->get('resource.history'));
-} catch (Exception $e) {
-    die($e->getMessage());
-}
-
-$linkDb = new BookmarkFileService($conf, $history, $loginManager->isLoggedIn());
-
-if (isset($_SERVER['QUERY_STRING']) && startsWith($_SERVER['QUERY_STRING'], 'do=dailyrss')) {
-    header('Location: ./daily-rss');
-    exit;
-}
-
 $containerBuilder = new ContainerBuilder($conf, $sessionManager, $loginManager);
 $container = $containerBuilder->build();
 $app = new App($container);
@@ -1008,13 +966,15 @@ $app->group('/api/v1', function () {
 
 $app->group('', function () {
     /* -- PUBLIC --*/
-    $this->get('/login', '\Shaarli\Front\Controller\Visitor\LoginController:index');
+    $this->get('/', '\Shaarli\Front\Controller\Visitor\BookmarkListController:index');
+    $this->get('/shaare/{hash}', '\Shaarli\Front\Controller\Visitor\BookmarkListController:permalink');
+    $this->get('/login', '\Shaarli\Front\Controller\Visitor\LoginController:index')->setName('login');
     $this->get('/picture-wall', '\Shaarli\Front\Controller\Visitor\PictureWallController:index');
     $this->get('/tags/cloud', '\Shaarli\Front\Controller\Visitor\TagCloudController:cloud');
     $this->get('/tags/list', '\Shaarli\Front\Controller\Visitor\TagCloudController:list');
     $this->get('/daily', '\Shaarli\Front\Controller\Visitor\DailyController:index');
-    $this->get('/daily-rss', '\Shaarli\Front\Controller\Visitor\DailyController:rss');
-    $this->get('/feed/atom', '\Shaarli\Front\Controller\Visitor\FeedController:atom');
+    $this->get('/daily-rss', '\Shaarli\Front\Controller\Visitor\DailyController:rss')->setName('rss');
+    $this->get('/feed/atom', '\Shaarli\Front\Controller\Visitor\FeedController:atom')->setName('atom');
     $this->get('/feed/rss', '\Shaarli\Front\Controller\Visitor\FeedController:rss');
     $this->get('/open-search', '\Shaarli\Front\Controller\Visitor\OpenSearchController:index');
 
@@ -1057,19 +1017,4 @@ $app->group('', function () {
 
 $response = $app->run(true);
 
-// Hack to make Slim and Shaarli router work together:
-// If a Slim route isn't found and NOT API call, we call renderPage().
-if ($response->getStatusCode() == 404 && strpos($_SERVER['REQUEST_URI'], '/api/v1') === false) {
-    // We use UTF-8 for proper international characters handling.
-    header('Content-Type: text/html; charset=utf-8');
-    renderPage($conf, $pluginManager, $linkDb, $history, $sessionManager, $loginManager);
-} else {
-    $response = $response
-        ->withHeader('Access-Control-Allow-Origin', '*')
-        ->withHeader(
-            'Access-Control-Allow-Headers',
-            'X-Requested-With, Content-Type, Accept, Origin, Authorization'
-        )
-        ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    $app->respond($response);
-}
+$app->respond($response);

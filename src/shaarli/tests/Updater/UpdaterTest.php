@@ -30,6 +30,12 @@ class UpdaterTest extends PHPUnit_Framework_TestCase
      */
     protected $conf;
 
+    /** @var BookmarkServiceInterface */
+    protected $bookmarkService;
+
+    /** @var Updater */
+    protected $updater;
+
     /**
      * Executed before each test.
      */
@@ -37,6 +43,8 @@ class UpdaterTest extends PHPUnit_Framework_TestCase
     {
         copy('tests/utils/config/configJson.json.php', self::$configFile .'.json.php');
         $this->conf = new ConfigManager(self::$configFile);
+        $this->bookmarkService = new BookmarkFileService($this->conf, $this->createMock(History::class), true);
+        $this->updater = new Updater([], $this->bookmarkService, $this->conf, true);
     }
 
     /**
