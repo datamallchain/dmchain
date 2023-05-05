@@ -28,7 +28,6 @@ require_once __DIR__ . '/init.php';
 use Shaarli\Config\ConfigManager;
 use Shaarli\Container\ContainerBuilder;
 use Shaarli\Languages;
-use Shaarli\Plugin\PluginManager;
 use Shaarli\Security\CookieManager;
 use Shaarli\Security\LoginManager;
 use Shaarli\Security\SessionManager;

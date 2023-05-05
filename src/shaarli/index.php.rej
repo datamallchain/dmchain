@@ -1,52 +1,11 @@
 diff a/src/shaarli/index.php b/src/shaarli/index.php	(rejected hunks)
-@@ -149,48 +70,13 @@
+@@ -65,9 +64,6 @@
+ RainTPL::$tpl_dir = $conf->get('resource.raintpl_tpl').'/'.$conf->get('resource.theme').'/'; // template directory
+ RainTPL::$cache_dir = $conf->get('resource.raintpl_tmp'); // cache directory
  
+-$pluginManager = new PluginManager($conf);
+-$pluginManager->load($conf->get('general.enabled_plugins'));
+-
  date_default_timezone_set($conf->get('general.timezone', 'UTC'));
  
--ob_start();  // Output buffering for the page cache.
--
--// Prevent caching on client side or proxy: (yes, it's ugly)
--header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
--header("Cache-Control: no-store, no-cache, must-revalidate");
--header("Cache-Control: post-check=0, pre-check=0", false);
--header("Pragma: no-cache");
--
--$loginManager->checkLoginState($clientIpId);
--
--// ------------------------------------------------------------------------------------------
--// Token management for XSRF protection
--// Token should be used in any form which acts on data (create,update,delete,import...).
--if (!isset($_SESSION['tokens'])) {
--    $_SESSION['tokens']=array();  // Token are attached to the session.
--}
--
--if (!isset($_SESSION['LINKS_PER_PAGE'])) {
--    $_SESSION['LINKS_PER_PAGE'] = $conf->get('general.links_per_page', 20);
--}
-+$loginManager->checkLoginState(client_ip_id($_SERVER));
- 
- $containerBuilder = new ContainerBuilder($conf, $sessionManager, $cookieManager, $loginManager);
- $container = $containerBuilder->build();
- $app = new App($container);
- 
--// REST API routes
--$app->group('/api/v1', function () {
--    $this->get('/info', '\Shaarli\Api\Controllers\Info:getInfo')->setName('getInfo');
--    $this->get('/links', '\Shaarli\Api\Controllers\Links:getLinks')->setName('getLinks');
--    $this->get('/links/{id:[\d]+}', '\Shaarli\Api\Controllers\Links:getLink')->setName('getLink');
--    $this->post('/links', '\Shaarli\Api\Controllers\Links:postLink')->setName('postLink');
--    $this->put('/links/{id:[\d]+}', '\Shaarli\Api\Controllers\Links:putLink')->setName('putLink');
--    $this->delete('/links/{id:[\d]+}', '\Shaarli\Api\Controllers\Links:deleteLink')->setName('deleteLink');
--
--    $this->get('/tags', '\Shaarli\Api\Controllers\Tags:getTags')->setName('getTags');
--    $this->get('/tags/{tagName:[\w]+}', '\Shaarli\Api\Controllers\Tags:getTag')->setName('getTag');
--    $this->put('/tags/{tagName:[\w]+}', '\Shaarli\Api\Controllers\Tags:putTag')->setName('putTag');
--    $this->delete('/tags/{tagName:[\w]+}', '\Shaarli\Api\Controllers\Tags:deleteTag')->setName('deleteTag');
--
--    $this->get('/history', '\Shaarli\Api\Controllers\HistoryController:getHistory')->setName('getHistory');
--})->add('\Shaarli\Api\ApiMiddleware');
--
-+// Main Shaarli routes
- $app->group('', function () {
-     $this->get('/install', '\Shaarli\Front\Controller\Visitor\InstallController:index')->setName('displayInstall');
-     $this->get('/install/session-test', '\Shaarli\Front\Controller\Visitor\InstallController:sessionTest');
+ $loginManager->checkLoginState(client_ip_id($_SERVER));
