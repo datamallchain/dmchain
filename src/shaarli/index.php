@@ -800,6 +800,7 @@ $app->group('', function () {
 
     $this->get('/add-tag/{newTag}', '\Shaarli\Front\Controller\Visitor\TagController:addTag');
     $this->get('/remove-tag/{tag}', '\Shaarli\Front\Controller\Visitor\TagController:removeTag');
+    $this->get('/links-per-page', '\Shaarli\Front\Controller\Visitor\PublicSessionFilterController:linksPerPage');
 
     /* -- LOGGED IN -- */
     $this->get('/logout', '\Shaarli\Front\Controller\Admin\LogoutController:index');
@@ -830,7 +831,6 @@ $app->group('', function () {
     $this->get('/admin/token', '\Shaarli\Front\Controller\Admin\TokenController:getToken');
     $this->get('/admin/thumbnails', '\Shaarli\Front\Controller\Admin\ThumbnailsController:index');
 
-    $this->get('/links-per-page', '\Shaarli\Front\Controller\Admin\SessionFilterController:linksPerPage');
     $this->get('/visibility/{visibility}', '\Shaarli\Front\Controller\Admin\SessionFilterController:visibility');
     $this->get('/untagged-only', '\Shaarli\Front\Controller\Admin\SessionFilterController:untaggedOnly');
 })->add('\Shaarli\Front\ShaarliMiddleware');
