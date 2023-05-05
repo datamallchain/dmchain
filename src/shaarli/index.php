@@ -589,6 +589,8 @@ function renderPage($conf, $pluginManager, $bookmarkService, $history, $sessionM
 
     // -------- All other functions are reserved for the registered user:
 
+    // TODO: Remove legacy admin route redirections. We'll only keep public URL.
+
     // -------- Display the Tools menu if requested (import/export/bookmarklet...)
     if ($targetPage == Router::$PAGE_TOOLS) {
         header('Location: ./admin/tools');
@@ -637,53 +639,7 @@ function renderPage($conf, $pluginManager, $bookmarkService, $history, $sessionM
 
     // -------- User clicked either "Set public" or "Set private" bulk operation
     if ($targetPage == Router::$PAGE_CHANGE_VISIBILITY) {
-        if (! $sessionManager->checkToken($_GET['token'])) {
-            die(t('Wrong token.'));
-        }
-
-        $ids = trim($_GET['ids']);
-        if (strpos($ids, ' ') !== false) {
-            // multiple, space-separated ids provided
-            $ids = array_values(array_filter(preg_split('/\s+/', escape($ids))));
-        } else {
-            // only a single id provided
-            $ids = [$ids];
-        }
-
-        // assert at least one id is given
-        if (!count($ids)) {
-            die('no id provided');
-        }
-        // assert that the visibility is valid
-        if (!isset($_GET['newVisibility']) || !in_array($_GET['newVisibility'], ['public', 'private'])) {
-            die('invalid visibility');
-        } else {
-            $private = $_GET['newVisibility'] === 'private';
-        }
-        $factory = new FormatterFactory($conf, $loginManager->isLoggedIn());
-        $formatter = $factory->getFormatter('raw');
-        foreach ($ids as $id) {
-            $id = (int) escape($id);
-            $bookmark = $bookmarkService->get($id);
-            $bookmark->setPrivate($private);
-
-            // To preserve backward compatibility with 3rd parties, plugins still use arrays
-            $data = $formatter->format($bookmark);
-            $pluginManager->executeHooks('save_link', $data);
-            $bookmark->fromArray($data);
-
-            $bookmarkService->set($bookmark);
-        }
-        $bookmarkService->save();
-
-        $location = '?';
-        if (isset($_SERVER['HTTP_REFERER'])) {
-            $location = generateLocation(
-                $_SERVER['HTTP_REFERER'],
-                $_SERVER['HTTP_HOST']
-            );
-        }
-        header('Location: ' . $location); // After deleting the link, redirect to appropriate location
+        header('Location: ./admin/shaare/visibility?id=' . $_GET['token']);
         exit;
     }
 
@@ -1254,6 +1210,7 @@ $app->group('', function () {
     $this->get('/admin/shaare/{id:[0-9]+}', '\Shaarli\Front\Controller\Admin\ManageShaareController:displayEditForm');
     $this->post('/admin/shaare', '\Shaarli\Front\Controller\Admin\ManageShaareController:save');
     $this->get('/admin/shaare/delete', '\Shaarli\Front\Controller\Admin\ManageShaareController:deleteBookmark');
+    $this->get('/admin/shaare/visibility', '\Shaarli\Front\Controller\Admin\ManageShaareController:changeVisibility');
 
     $this->get('/links-per-page', '\Shaarli\Front\Controller\Admin\SessionFilterController:linksPerPage');
     $this->get('/visibility/{visibility}', '\Shaarli\Front\Controller\Admin\SessionFilterController:visibility');
