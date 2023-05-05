@@ -351,7 +351,7 @@ You use the community supported version of the original Shaarli project, by Seba
 
         $this->write();
 
-        $pageCacheManager = new PageCacheManager($pageCacheDir);
+        $pageCacheManager = new PageCacheManager($pageCacheDir, $this->loggedIn);
         $pageCacheManager->invalidateCaches();
     }
 

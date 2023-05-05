@@ -416,7 +416,7 @@ function showLinkList($PAGE, $linkDb, $conf, $pluginManager, $loginManager)
  */
 function renderPage($conf, $pluginManager, $bookmarkService, $history, $sessionManager, $loginManager)
 {
-    $pageCacheManager = new PageCacheManager($conf->get('resource.page_cache'));
+    $pageCacheManager = new PageCacheManager($conf->get('resource.page_cache'), $loginManager->isLoggedIn());
     $updater = new Updater(
         UpdaterUtils::read_updates_file($conf->get('resource.updates')),
         $bookmarkService,
@@ -1707,7 +1707,7 @@ try {
 $linkDb = new BookmarkFileService($conf, $history, $loginManager->isLoggedIn());
 
 if (isset($_SERVER['QUERY_STRING']) && startsWith($_SERVER['QUERY_STRING'], 'do=dailyrss')) {
-    showDailyRSS($linkDb, $conf, $loginManager);
+    header('Location: ./daily-rss');
     exit;
 }
 
@@ -1739,6 +1739,7 @@ $app->group('', function () {
     $this->get('/tag-cloud', '\Shaarli\Front\Controller\TagCloudController:cloud')->setName('tagcloud');
     $this->get('/tag-list', '\Shaarli\Front\Controller\TagCloudController:list')->setName('taglist');
     $this->get('/daily', '\Shaarli\Front\Controller\DailyController:index')->setName('daily');
+    $this->get('/daily-rss', '\Shaarli\Front\Controller\DailyController:rss')->setName('dailyrss');
 
     $this->get('/add-tag/{newTag}', '\Shaarli\Front\Controller\TagController:addTag')->setName('add-tag');
 })->add('\Shaarli\Front\ShaarliMiddleware');
