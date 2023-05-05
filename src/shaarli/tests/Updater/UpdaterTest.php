@@ -33,6 +33,9 @@ class UpdaterTest extends PHPUnit_Framework_TestCase
     /** @var BookmarkServiceInterface */
     protected $bookmarkService;
 
+    /** @var \ReferenceLinkDB */
+    protected $refDB;
+
     /** @var Updater */
     protected $updater;
 
@@ -41,6 +44,9 @@ class UpdaterTest extends PHPUnit_Framework_TestCase
      */
     public function setUp()
     {
+        $this->refDB = new \ReferenceLinkDB();
+        $this->refDB->write(self::$testDatastore);
+
         copy('tests/utils/config/configJson.json.php', self::$configFile .'.json.php');
         $this->conf = new ConfigManager(self::$configFile);
         $this->bookmarkService = new BookmarkFileService($this->conf, $this->createMock(History::class), true);

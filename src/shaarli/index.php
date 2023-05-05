@@ -61,13 +61,11 @@ require_once 'application/TimeZone.php';
 require_once 'application/Utils.php';
 
 use Shaarli\ApplicationUtils;
-use Shaarli\Bookmark\BookmarkFileService;
 use Shaarli\Config\ConfigManager;
 use Shaarli\Container\ContainerBuilder;
-use Shaarli\History;
 use Shaarli\Languages;
 use Shaarli\Plugin\PluginManager;
-use Shaarli\Render\PageBuilder;
+use Shaarli\Security\CookieManager;
 use Shaarli\Security\LoginManager;
 use Shaarli\Security\SessionManager;
 use Slim\App;
@@ -118,13 +116,14 @@ if ($conf->get('dev.debug', false)) {
     // See all errors (for debugging only)
     error_reporting(-1);
 
-    set_error_handler(function($errno, $errstr, $errfile, $errline, array $errcontext) {
+    set_error_handler(function ($errno, $errstr, $errfile, $errline, array $errcontext) {
         throw new ErrorException($errstr, 0, $errno, $errfile, $errline);
     });
 }
 
-$sessionManager = new SessionManager($_SESSION, $conf);
-$loginManager = new LoginManager($conf, $sessionManager);
+$sessionManager = new SessionManager($_SESSION, $conf, session_save_path());
+$cookieManager = new CookieManager($_COOKIE);
+$loginManager = new LoginManager($conf, $sessionManager, $cookieManager);
 $loginManager->generateStaySignedInToken($_SERVER['REMOTE_ADDR']);
 $clientIpId = client_ip_id($_SERVER);
 
@@ -158,28 +157,7 @@ header("Cache-Control: no-store, no-cache, must-revalidate");
 header("Cache-Control: post-check=0, pre-check=0", false);
 header("Pragma: no-cache");
 
-if (! is_file($conf->getConfigFileExt())) {
-    // Ensure Shaarli has proper access to its resources
-    $errors = ApplicationUtils::checkResourcePermissions($conf);
-
-    if ($errors != array()) {
-        $message = '<p>'. t('Insufficient permissions:') .'</p><ul>';
-
-        foreach ($errors as $error) {
-            $message .= '<li>'.$error.'</li>';
-        }
-        $message .= '</ul>';
-
-        header('Content-Type: text/html; charset=utf-8');
-        echo $message;
-        exit;
-    }
-
-    // Display the installation form if no existing config is found
-    install($conf, $sessionManager, $loginManager);
-}
-
-$loginManager->checkLoginState($_COOKIE, $clientIpId);
+$loginManager->checkLoginState($clientIpId);
 
 // ------------------------------------------------------------------------------------------
 // Process login form: Check if login/password is correct.
@@ -205,7 +183,7 @@ if (isset($_POST['login'])) {
             $expirationTime = $sessionManager->extendSession();
 
             setcookie(
-                $loginManager::$STAY_SIGNED_IN_COOKIE,
+                CookieManager::STAY_SIGNED_IN,
                 $loginManager->getStaySignedInToken(),
                 $expirationTime,
                 WEB_PATH
@@ -965,6 +943,10 @@ $app->group('/api/v1', function () {
 })->add('\Shaarli\Api\ApiMiddleware');
 
 $app->group('', function () {
+    $this->get('/install', '\Shaarli\Front\Controller\Visitor\InstallController:index')->setName('displayInstall');
+    $this->get('/install/session-test', '\Shaarli\Front\Controller\Visitor\InstallController:sessionTest');
+    $this->post('/install', '\Shaarli\Front\Controller\Visitor\InstallController:save')->setName('saveInstall');
+
     /* -- PUBLIC --*/
     $this->get('/', '\Shaarli\Front\Controller\Visitor\BookmarkListController:index');
     $this->get('/shaare/{hash}', '\Shaarli\Front\Controller\Visitor\BookmarkListController:permalink');
