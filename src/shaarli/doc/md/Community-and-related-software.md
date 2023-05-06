@@ -55,10 +55,14 @@ See [Theming](Theming) for a list of community-contributed themes, and an instal
 - [Self dead link](https://framagit.org/qwertygc/shaarli-dev-code/blob/master/self-dead-link.php) - Detect dead links on shaarli. This version use the database of shaarli. [Another version](https://framagit.org/qwertygc/shaarli-dev-code/blob/master/dead-link.php), can be used for other shaarli instances (but is more resource consuming).
 - [Bookmark Archiver](https://github.com/pirate/bookmark-archiver) - Save an archived copy of all websites starred using browser bookmarks/Shaarli/Delicious/Instapaper/Unmark.it/Pocket/Pinboard. Outputs browseable html. 
 
+
 ## Alternatives to Shaarli
+
 See [awesome-selfhosted: bookmarks & link sharing](https://github.com/Kickball/awesome-selfhosted/#bookmarks--link-sharing).
 
+
 ## Community
+
 - [Liens en vrac de sebsauvage](http://sebsauvage.net/links/) - the original Shaarli
 - [A large list of Shaarlis](http://porneia.free.fr/pub/links/ou-est-shaarli.html)
 - [A list of working Shaarli aggregators](https://raw.githubusercontent.com/Oros42/find_shaarlis/master/annuaires.json)
@@ -69,7 +73,9 @@ See [awesome-selfhosted: bookmarks & link sharing](https://github.com/Kickball/a
 - [Original revisions history](http://sebsauvage.net/wiki/doku.php?id=php:shaarli:history)
 - [Shaarli.fr/my](https://www.shaarli.fr/my.php) - Unofficial, unsupported (old fork) hosted Shaarlis provider, courtesy of [DMeloni](https://github.com/DMeloni)
 
+
 ### Articles and social media discussions
+
 - 2016-09-22 - Hacker News - https://news.ycombinator.com/item?id=12552176
 - 2015-08-15 - Reddit - [Question about migrating from WordPress to Shaarli.](https://www.reddit.com/r/selfhosted/comments/3h3zwh/question_about_migrating_from_wordpress_to_shaarli/)
 - 2015-06-22 - Hacker News - https://news.ycombinator.com/item?id=9755366
