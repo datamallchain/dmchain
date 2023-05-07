@@ -1,15 +1,14 @@
 diff a/src/shaarli/tests/updater/UpdaterTest.php b/src/shaarli/tests/updater/UpdaterTest.php	(rejected hunks)
-@@ -168,11 +170,11 @@ public function testOneUpdate()
+@@ -2,11 +2,11 @@
+ namespace Shaarli\Updater;
  
-     /**
-      * Test Update failed.
--     *
--     * @expectedException \Exception
-      */
-     public function testUpdateFailed()
-     {
-+        $this->expectException(\Exception::class);
-+
-         $updates = array(
-             'updateMethodDummy1',
-             'updateMethodDummy2',
+ use Exception;
+-use PHPUnit\Framework\TestCase;
+ use Shaarli\Bookmark\BookmarkFileService;
+ use Shaarli\Bookmark\BookmarkServiceInterface;
+ use Shaarli\Config\ConfigManager;
+ use Shaarli\History;
++use Shaarli\TestCase;
+ 
+ 
+ /**
