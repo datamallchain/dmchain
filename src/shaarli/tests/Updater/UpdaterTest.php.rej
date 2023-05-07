@@ -1,14 +1,9 @@
 diff a/src/shaarli/tests/updater/UpdaterTest.php b/src/shaarli/tests/updater/UpdaterTest.php	(rejected hunks)
-@@ -2,11 +2,11 @@
+@@ -2,6 +2,7 @@
  namespace Shaarli\Updater;
  
  use Exception;
--use PHPUnit\Framework\TestCase;
++use malkusch\lock\mutex\NoMutex;
  use Shaarli\Bookmark\BookmarkFileService;
  use Shaarli\Bookmark\BookmarkServiceInterface;
  use Shaarli\Config\ConfigManager;
- use Shaarli\History;
-+use Shaarli\TestCase;
- 
- 
- /**
