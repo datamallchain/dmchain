@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shaarli\Bookmark;
 
+use malkusch\lock\exception\LockAcquireException;
 use malkusch\lock\mutex\Mutex;
 use malkusch\lock\mutex\NoMutex;
 use Shaarli\Bookmark\Exception\DatastoreNotInitializedException;
@@ -80,7 +81,7 @@ class BookmarkIO
         }
 
         $content = null;
-        $this->mutex->synchronized(function () use (&$content) {
+        $this->synchronized(function () use (&$content) {
             $content = file_get_contents($this->datastore);
         });
 
