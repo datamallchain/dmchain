@@ -30,6 +30,7 @@ use Psr\Log\LogLevel;
 use Shaarli\Config\ConfigManager;
 use Shaarli\Container\ContainerBuilder;
 use Shaarli\Languages;
+use Shaarli\Plugin\PluginManager;
 use Shaarli\Security\BanManager;
 use Shaarli\Security\CookieManager;
 use Shaarli\Security\LoginManager;
@@ -859,6 +860,15 @@ $app->group('/admin', function () {
     $this->get('/visibility/{visibility}', '\Shaarli\Front\Controller\Admin\SessionFilterController:visibility');
 })->add('\Shaarli\Front\ShaarliAdminMiddleware');
 
+$app->group('/plugin', function () use ($pluginManager) {
+    foreach ($pluginManager->getRegisteredRoutes() as $pluginName => $routes) {
+        $this->group('/' . $pluginName, function () use ($routes) {
+            foreach ($routes as $route) {
+                $this->{strtolower($route['method'])}('/' . ltrim($route['route'], '/'), $route['callable']);
+            }
+        });
+    }
+})->add('\Shaarli\Front\ShaarliMiddleware');
 
 // REST API routes
 $app->group('/api/v1', function () {

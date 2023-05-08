@@ -3,6 +3,7 @@ namespace Shaarli\Plugin;
 
 use Shaarli\Config\ConfigManager;
 use Shaarli\Plugin\Exception\PluginFileNotFoundException;
+use Shaarli\Plugin\Exception\PluginInvalidRouteException;
 
 /**
  * Class PluginManager
@@ -85,6 +86,9 @@ class PluginManager
                 $this->loadPlugin($dirs[$index], $plugin);
             } catch (PluginFileNotFoundException $e) {
                 error_log($e->getMessage());
+            } catch (\Throwable $e) {
+                $error = $plugin . t(' [plugin incompatibility]: ') . $e->getMessage();
+                $this->errors = array_unique(array_merge($this->errors, [$error]));
             }
         }
     }
@@ -165,6 +169,22 @@ class PluginManager
             }
         }
 
+        $registerRouteFunction = $pluginName . '_register_routes';
+        $routes = null;
+        if (function_exists($registerRouteFunction)) {
+            $routes = call_user_func($registerRouteFunction);
+        }
+
+        if ($routes !== null) {
+            foreach ($routes as $route) {
+                if (static::validateRouteRegistration($route)) {
+                    $this->registeredRoutes[$pluginName][] = $route;
+                } else {
+                    throw new PluginInvalidRouteException($pluginName);
+                }
+            }
+        }
+
         $this->loadedPlugins[] = $pluginName;
     }
 
@@ -237,6 +257,14 @@ class PluginManager
     }
 
     /**
+     * @return array List of registered custom routes by plugins.
+     */
+    public function getRegisteredRoutes(): array
+    {
+        return $this->registeredRoutes;
+    }
+
+    /**
      * Return the list of encountered errors.
      *
      * @return array List of errors (empty array if none exists).
@@ -244,5 +272,33 @@ class PluginManager
     public function getErrors()
     {
         return $this->errors;
+    }
+
+    /**
+     * Checks whether provided input is valid to register a new route.
+     * It must contain keys `method`, `route`, `callable` (all strings).
+     *
+     * @param string[] $input
+     *
+     * @return bool
+     */
+    protected static function validateRouteRegistration(array $input): bool
+    {
+        if (
+            !array_key_exists('method', $input)
+            || !in_array(strtoupper($input['method']), ['GET', 'PUT', 'PATCH', 'POST', 'DELETE'])
+        ) {
+            return false;
+        }
+
+        if (!array_key_exists('route', $input) || !preg_match('#^[a-z\d/\.\-_]+$#', $input['route'])) {
+            return false;
+        }
+
+        if (!array_key_exists('callable', $input)) {
+            return false;
+        }
+
+        return true;
     }
 }

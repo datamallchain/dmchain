@@ -1,10 +1,20 @@
 diff a/src/shaarli/index.php b/src/shaarli/index.php	(rejected hunks)
-@@ -71,7 +86,7 @@
+@@ -87,7 +88,17 @@
  
  $loginManager->checkLoginState(client_ip_id($_SERVER));
  
--$containerBuilder = new ContainerBuilder($conf, $sessionManager, $cookieManager, $loginManager);
-+$containerBuilder = new ContainerBuilder($conf, $sessionManager, $cookieManager, $loginManager, $logger);
+-$containerBuilder = new ContainerBuilder($conf, $sessionManager, $cookieManager, $loginManager, $logger);
++$pluginManager = new PluginManager($conf);
++$pluginManager->load($conf->get('general.enabled_plugins', []));
++
++$containerBuilder = new ContainerBuilder(
++    $conf,
++    $sessionManager,
++    $cookieManager,
++    $loginManager,
++    $pluginManager,
++    $logger
++);
  $container = $containerBuilder->build();
  $app = new App($container);
  
