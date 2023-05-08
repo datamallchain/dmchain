@@ -1,0 +1,9 @@
+diff a/src/shaarli/application/Languages.php b/src/shaarli/application/Languages.php	(rejected hunks)
+@@ -186,6 +186,7 @@ public static function getAvailableLanguages()
+             'en' => t('English'),
+             'fr' => t('French'),
+             'jp' => t('Japanese'),
++            'ru' => t('Russian'),
+         ];
+     }
+ }
