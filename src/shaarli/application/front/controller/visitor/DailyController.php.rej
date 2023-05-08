@@ -1,0 +1,10 @@
+diff a/src/shaarli/application/front/controller/visitor/DailyController.php b/src/shaarli/application/front/controller/visitor/DailyController.php	(rejected hunks)
+@@ -131,7 +131,7 @@ public function rss(Request $request, Response $response): Response
+             $dataPerDay[$day] = [
+                 'date' => $endDateTime,
+                 'date_rss' => $endDateTime->format(DateTime::RSS),
+-                'date_human' => DailyPageHelper::getDescriptionByType($type, $dayDateTime),
++                'date_human' => DailyPageHelper::getDescriptionByType($type, $dayDateTime, false),
+                 'absolute_url' => $indexUrl . 'daily?' . $type . '=' . $day,
+                 'links' => [],
+             ];
