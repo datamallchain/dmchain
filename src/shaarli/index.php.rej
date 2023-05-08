@@ -1,11 +1,10 @@
 diff a/src/shaarli/index.php b/src/shaarli/index.php	(rejected hunks)
-@@ -65,9 +64,6 @@
- RainTPL::$tpl_dir = $conf->get('resource.raintpl_tpl').'/'.$conf->get('resource.theme').'/'; // template directory
- RainTPL::$cache_dir = $conf->get('resource.raintpl_tmp'); // cache directory
- 
--$pluginManager = new PluginManager($conf);
--$pluginManager->load($conf->get('general.enabled_plugins'));
--
- date_default_timezone_set($conf->get('general.timezone', 'UTC'));
+@@ -71,7 +86,7 @@
  
  $loginManager->checkLoginState(client_ip_id($_SERVER));
+ 
+-$containerBuilder = new ContainerBuilder($conf, $sessionManager, $cookieManager, $loginManager);
++$containerBuilder = new ContainerBuilder($conf, $sessionManager, $cookieManager, $loginManager, $logger);
+ $container = $containerBuilder->build();
+ $app = new App($container);
+ 
