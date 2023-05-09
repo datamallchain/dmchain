@@ -1,9 +1,9 @@
 diff a/src/shaarli/application/front/controller/visitor/BookmarkListController.php b/src/shaarli/application/front/controller/visitor/BookmarkListController.php	(rejected hunks)
-@@ -33,6 +33,7 @@ public function index(Request $request, Response $response): Response
- 
-         $formatter = $this->container->formatterFactory->getFormatter();
-         $formatter->addContextData('base_path', $this->container->basePath);
-+        $formatter->addContextData('index_url', index_url($this->container->environment));
+@@ -36,7 +36,6 @@ public function index(Request $request, Response $response): Response
  
          $searchTags = normalize_spaces($request->getParam('searchtags') ?? '');
          $searchTerm = escape(normalize_spaces($request->getParam('searchterm') ?? ''));
+-        ;
+ 
+         // Filter bookmarks according search parameters.
+         $visibility = $this->container->sessionManager->getSessionParameter('visibility');

@@ -127,7 +127,7 @@ class FeedBuilder
         $data['self_link'] = $pageaddr . $requestUri;
         $data['index_url'] = $pageaddr;
         $data['usepermalinks'] = $this->usePermalinks === true;
-        $data['links'] = $linkDisplayed;
+        $data['links'] = $links;
 
         return $data;
     }
@@ -267,19 +267,18 @@ class FeedBuilder
      * If 'nb' not set or invalid, default value: $DEFAULT_NB_LINKS.
      * If 'nb' is set to 'all', display all filtered bookmarks (max parameter).
      *
-     * @param int   $max       maximum number of bookmarks to display.
      * @param array $userInput $_GET.
      *
      * @return int number of bookmarks to display.
      */
-    protected function getNbLinks($max, ?array $userInput)
+    protected function getLimit(?array $userInput)
     {
         if (empty($userInput['nb'])) {
             return self::$DEFAULT_NB_LINKS;
         }
 
         if ($userInput['nb'] == 'all') {
-            return $max;
+            return null;
         }
 
         $intNb = intval($userInput['nb']);

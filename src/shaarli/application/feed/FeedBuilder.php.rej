@@ -1,0 +1,30 @@
+diff a/src/shaarli/application/feed/FeedBuilder.php b/src/shaarli/application/feed/FeedBuilder.php	(rejected hunks)
+@@ -102,22 +102,16 @@ public function buildData(string $feedType, ?array $userInput)
+             $userInput['searchtags'] = false;
+         }
+ 
+-        // Optionally filter the results:
+-        $linksToDisplay = $this->linkDB->search($userInput ?? [], null, false, false, true);
+-
+-        $nblinksToDisplay = $this->getNbLinks(count($linksToDisplay), $userInput);
++        $limit = $this->getLimit($userInput);
+ 
+-        // Can't use array_keys() because $link is a LinkDB instance and not a real array.
+-        $keys = [];
+-        foreach ($linksToDisplay as $key => $value) {
+-            $keys[] = $key;
+-        }
++        // Optionally filter the results:
++        $searchResult = $this->linkDB->search($userInput ?? [], null, false, false, true, ['limit' => $limit]);
+ 
+         $pageaddr = escape(index_url($this->serverInfo));
+         $this->formatter->addContextData('index_url', $pageaddr);
+-        $linkDisplayed = [];
+-        for ($i = 0; $i < $nblinksToDisplay && $i < count($keys); $i++) {
+-            $linkDisplayed[$keys[$i]] = $this->buildItem($feedType, $linksToDisplay[$keys[$i]], $pageaddr);
++        $links = [];
++        foreach ($searchResult->getBookmarks() as $key => $bookmark) {
++            $links[$key] = $this->buildItem($feedType, $bookmark, $pageaddr);
+         }
+ 
+         $data['language'] = $this->getTypeLanguage($feedType);

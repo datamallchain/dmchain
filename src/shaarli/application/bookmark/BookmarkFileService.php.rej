@@ -1,0 +1,23 @@
+diff a/src/shaarli/application/bookmark/BookmarkFileService.php b/src/shaarli/application/bookmark/BookmarkFileService.php	(rejected hunks)
+@@ -305,10 +317,10 @@ public function save(): void
+      */
+     public function bookmarksCountPerTag(array $filteringTags = [], string $visibility = null): array
+     {
+-        $bookmarks = $this->search(['searchtags' => $filteringTags], $visibility);
++        $searchResult = $this->search(['searchtags' => $filteringTags], $visibility);
+         $tags = [];
+         $caseMapping = [];
+-        foreach ($bookmarks as $bookmark) {
++        foreach ($searchResult->getBookmarks() as $bookmark) {
+             foreach ($bookmark->getTags() as $tag) {
+                 if (
+                     empty($tag)
+@@ -357,7 +369,7 @@ public function findByDate(
+         $previous = null;
+         $next = null;
+ 
+-        foreach ($this->search([], null, false, false, true) as $bookmark) {
++        foreach ($this->search([], null, false, false, true)->getBookmarks() as $bookmark) {
+             if ($to < $bookmark->getCreated()) {
+                 $next = $bookmark->getCreated();
+             } elseif ($from < $bookmark->getCreated() && $to > $bookmark->getCreated()) {

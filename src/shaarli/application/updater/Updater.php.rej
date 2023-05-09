@@ -1,0 +1,10 @@
+diff a/src/shaarli/application/updater/Updater.php b/src/shaarli/application/updater/Updater.php	(rejected hunks)
+@@ -152,7 +152,7 @@ public function updateMethodMigrateExistingNotesUrl(): bool
+     {
+         $updated = false;
+ 
+-        foreach ($this->bookmarkService->search() as $bookmark) {
++        foreach ($this->bookmarkService->search()->getBookmarks() as $bookmark) {
+             if (
+                 $bookmark->isNote()
+                 && startsWith($bookmark->getUrl(), '?')

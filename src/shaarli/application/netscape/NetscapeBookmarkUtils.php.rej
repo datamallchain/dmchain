@@ -1,0 +1,10 @@
+diff a/src/shaarli/application/netscape/NetscapeBookmarkUtils.php b/src/shaarli/application/netscape/NetscapeBookmarkUtils.php	(rejected hunks)
+@@ -64,7 +64,7 @@ public function filterAndFormat(
+         }
+ 
+         $bookmarkLinks = [];
+-        foreach ($this->bookmarkService->search([], $selection) as $bookmark) {
++        foreach ($this->bookmarkService->search([], $selection)->getBookmarks() as $bookmark) {
+             $link = $formatter->format($bookmark);
+             $link['taglist'] = implode(',', $bookmark->getTags());
+             if ($bookmark->isNote() && $prependNoteUrl) {
