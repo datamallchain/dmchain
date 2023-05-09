@@ -1,17 +1,25 @@
 diff a/src/shaarli/application/bookmark/LinkUtils.php b/src/shaarli/application/bookmark/LinkUtils.php	(rejected hunks)
-@@ -68,11 +68,13 @@ function html_extract_tag($tag, $html)
-     $properties = implode('|', $propertiesKey);
-     // We need a OR here to accept either 'property=og:noquote' or 'property="og:unrelated og:my-tag"'
-     $orCondition  = '["\']?(?:og:)?' . $tag . '["\']?|["\'][^\'"]*?(?:og:)?' . $tag . '[^\'"]*?[\'"]';
-+    // Support quotes in double quoted content, and the other way around
-+    $content = 'content=(["\'])((?:(?!\1).)*)\1';
-     // Try to retrieve OpenGraph tag.
--    $ogRegex = '#<meta[^>]+(?:' . $properties . ')=(?:' . $orCondition . ')[^>]*content=(["\'])([^\1]*?)\1.*?>#';
-+    $ogRegex = '#<meta[^>]+(?:' . $properties . ')=(?:' . $orCondition . ')[^>]*' . $content . '.*?>#';
-     // If the attributes are not in the order property => content (e.g. Github)
-     // New regex to keep this readable... more or less.
--    $ogRegexReverse = '#<meta[^>]+content=(["\'])([^\1]*?)\1[^>]+(?:' . $properties . ')=(?:' . $orCondition . ').*?>#';
-+    $ogRegexReverse = '#<meta[^>]+' . $content . '[^>]+(?:' . $properties . ')=(?:' . $orCondition . ').*?>#';
+@@ -118,9 +133,20 @@ function hashtag_autolink($description, $indexUrl = '')
+      * \p{L} - letter from any language
+      * \p{Mn} - any non marking space (accents, umlauts, etc)
+      */
+-    $regex = '/(^|\s)#([\p{Pc}\p{N}\p{L}\p{Mn}]+)/mui';
+-    $replacement = '$1<a href="' . $indexUrl . './add-tag/$2" title="Hashtag $2">#$2</a>';
+-    return preg_replace($regex, $replacement, $description);
++    $regex = '/(^|\s)#([\p{Pc}\p{N}\p{L}\p{Mn}' . $tokens . ']+)/mui';
++    $format = function (array $match) use ($indexUrl): string {
++        $cleanMatch = str_replace(
++            BookmarkDefaultFormatter::SEARCH_HIGHLIGHT_OPEN,
++            '',
++            str_replace(BookmarkDefaultFormatter::SEARCH_HIGHLIGHT_CLOSE, '', $match[2])
++        );
++        return $match[1] . '<a href="' . $indexUrl . './add-tag/' . $cleanMatch . '"' .
++            ' title="Hashtag ' . $cleanMatch . '">' .
++                '#' . $match[2] .
++        '</a>';
++    };
++
++    return preg_replace_callback($regex, $format, $description);
+ }
  
-     if (
-         preg_match($ogRegex, $html, $matches) > 0
+ /**

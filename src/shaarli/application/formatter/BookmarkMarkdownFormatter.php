@@ -3,6 +3,7 @@
 namespace Shaarli\Formatter;
 
 use Shaarli\Config\ConfigManager;
+use Shaarli\Formatter\Parsedown\ShaarliParsedown;
 
 /**
  * Class BookmarkMarkdownFormatter
@@ -42,7 +43,7 @@ class BookmarkMarkdownFormatter extends BookmarkDefaultFormatter
     {
         parent::__construct($conf, $isLoggedIn);
 
-        $this->parsedown = new \Parsedown();
+        $this->parsedown = new ShaarliParsedown();
         $this->escape = $conf->get('security.markdown_escape', true);
         $this->allowedProtocols = $conf->get('security.allowed_protocols', []);
     }
@@ -128,6 +129,9 @@ class BookmarkMarkdownFormatter extends BookmarkDefaultFormatter
     protected function formatHashTags($description)
     {
         $indexUrl = ! empty($this->contextData['index_url']) ? $this->contextData['index_url'] : '';
+        $tokens = '(?:' . BookmarkDefaultFormatter::SEARCH_HIGHLIGHT_OPEN . ')' .
+            '(?:' . BookmarkDefaultFormatter::SEARCH_HIGHLIGHT_CLOSE . ')'
+        ;
 
         /*
          * To support unicode: http://stackoverflow.com/a/35498078/1484919
@@ -156,7 +160,7 @@ class BookmarkMarkdownFormatter extends BookmarkDefaultFormatter
             }
 
             if (!$codeBlockOn && !$codeLineOn) {
-                $descriptionLine = preg_replace($regex, $replacement, $descriptionLine);
+                $descriptionLine = preg_replace_callback($regex, $replacement, $descriptionLine);
             }
 
             $descriptionOut .= $descriptionLine;

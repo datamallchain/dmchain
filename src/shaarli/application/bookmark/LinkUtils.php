@@ -1,6 +1,7 @@
 <?php
 
 use Shaarli\Bookmark\Bookmark;
+use Shaarli\Formatter\BookmarkDefaultFormatter;
 
 /**
  * Extract title from an HTML document.
@@ -95,7 +96,18 @@ function html_extract_tag($tag, $html)
 function text2clickable($text)
 {
     $regex = '!(((?:https?|ftp|file)://|apt:|magnet:)\S+[a-z0-9\(\)]/?)!si';
-    return preg_replace($regex, '<a href="$1">$1</a>', $text);
+    $format = function (array $match): string {
+        return '<a href="' .
+            str_replace(
+                BookmarkDefaultFormatter::SEARCH_HIGHLIGHT_OPEN,
+                '',
+                str_replace(BookmarkDefaultFormatter::SEARCH_HIGHLIGHT_CLOSE, '', $match[1])
+            ) .
+            '">' . $match[1] . '</a>'
+        ;
+    };
+
+    return preg_replace_callback($regex, $format, $text);
 }
 
 /**
@@ -108,6 +120,9 @@ function text2clickable($text)
  */
 function hashtag_autolink($description, $indexUrl = '')
 {
+    $tokens = '(?:' . BookmarkDefaultFormatter::SEARCH_HIGHLIGHT_OPEN . ')' .
+              '(?:' . BookmarkDefaultFormatter::SEARCH_HIGHLIGHT_CLOSE . ')'
+    ;
     /*
      * To support unicode: http://stackoverflow.com/a/35498078/1484919
      * \p{Pc} - to match underscore
