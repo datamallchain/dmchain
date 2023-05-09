@@ -322,6 +322,7 @@ function format_date($date, $time = true, $intl = true)
         IntlDateFormatter::LONG,
         $time ? IntlDateFormatter::LONG : IntlDateFormatter::NONE
     );
+    $formatter->setTimeZone($date->getTimezone());
 
     return $formatter->format($date);
 }
