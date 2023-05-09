@@ -1,7 +1,17 @@
 diff a/src/shaarli/tests/updater/DummyUpdater.php b/src/shaarli/tests/updater/DummyUpdater.php	(rejected hunks)
-@@ -1,4 +1,5 @@
+@@ -1,6 +1,6 @@
  <?php
-+
- namespace Shaarli\Updater;
+ 
+-namespace Shaarli\Updater;
++namespace Shaarli\Tests\updater;
  
  use Exception;
+ use ReflectionClass;
+@@ -8,6 +8,7 @@
+ use Shaarli\Bookmark\BookmarkFileService;
+ use Shaarli\Bookmark\LinkDB;
+ use Shaarli\Config\ConfigManager;
++use Shaarli\Updater\Updater;
+ 
+ /**
+  * Class DummyUpdater.

@@ -33,7 +33,7 @@ class UpdaterTest extends PHPUnit_Framework_TestCase
     /** @var BookmarkServiceInterface */
     protected $bookmarkService;
 
-    /** @var \ReferenceLinkDB */
+    /** @var ReferenceLinkDB */
     protected $refDB;
 
     /** @var Updater */
@@ -45,7 +45,7 @@ class UpdaterTest extends PHPUnit_Framework_TestCase
     protected function setUp(): void
     {
         $mutex = new NoMutex();
-        $this->refDB = new \ReferenceLinkDB();
+        $this->refDB = new ReferenceLinkDB();
         $this->refDB->write(self::$testDatastore);
 
         copy('tests/utils/config/configJson.json.php', self::$configFile . '.json.php');
