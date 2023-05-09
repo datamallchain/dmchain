@@ -1,16 +1,9 @@
 diff a/src/shaarli/application/plugin/PluginManager.php b/src/shaarli/application/plugin/PluginManager.php	(rejected hunks)
-@@ -26,6 +27,14 @@ class PluginManager
-      */
-     private $loadedPlugins = [];
+@@ -2,6 +2,7 @@
  
-+    /** @var array List of registered routes. Contains keys:
-+     *               - `method`: HTTP method, GET/POST/PUT/PATCH/DELETE
-+     *               - `route` (path): without prefix, e.g. `/up/{variable}`
-+     *                 It will be later prefixed by `/plugin/<plugin name>/`.
-+     *               - `callable` string, function name or FQN class's method, e.g. `demo_plugin_custom_controller`.
-+     */
-+    protected $registeredRoutes = [];
-+
-     /**
-      * @var ConfigManager Configuration Manager instance.
-      */
+ namespace Shaarli\Plugin;
+ 
++use Shaarli\Bookmark\Bookmark;
+ use Shaarli\Config\ConfigManager;
+ use Shaarli\Plugin\Exception\PluginFileNotFoundException;
+ use Shaarli\Plugin\Exception\PluginInvalidRouteException;

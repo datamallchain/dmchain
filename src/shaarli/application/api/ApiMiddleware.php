@@ -143,6 +143,7 @@ class ApiMiddleware
     {
         $linkDb = new BookmarkFileService(
             $conf,
+            $this->container->get('pluginManager'),
             $this->container->get('history'),
             new FlockMutex(fopen(SHAARLI_MUTEX_FILE, 'r'), 2),
             true
