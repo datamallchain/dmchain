@@ -1,19 +1,5 @@
-diff a/src/shaarli/tests/updater/UpdaterTest.php b/src/shaarli/tests/updater/UpdaterTest.php	(rejected hunks)
-@@ -1,4 +1,5 @@
- <?php
-+
- namespace Shaarli\Updater;
- 
- use Exception;
-@@ -10,7 +11,6 @@
- use Shaarli\Plugin\PluginManager;
- use Shaarli\TestCase;
- 
--
- /**
-  * Class UpdaterTest.
-  * Runs unit tests against the updater class.
-@@ -67,10 +67,10 @@ protected function setUp(): void
+diff a/src/shaarli/tests/legacy/LegacyUpdaterTest.php b/src/shaarli/tests/legacy/LegacyUpdaterTest.php	(rejected hunks)
+@@ -51,10 +52,10 @@ protected function setUp(): void
       */
      public function testReadEmptyUpdatesFile()
      {
@@ -26,7 +12,7 @@ diff a/src/shaarli/tests/updater/UpdaterTest.php b/src/shaarli/tests/updater/Upd
          unlink($updatesFile);
      }
  
-@@ -80,7 +80,7 @@ public function testReadEmptyUpdatesFile()
+@@ -64,7 +65,7 @@ public function testReadEmptyUpdatesFile()
      public function testReadWriteUpdatesFile()
      {
          $updatesFile = $this->conf->get('resource.data_dir') . '/updates.txt';
@@ -35,7 +21,7 @@ diff a/src/shaarli/tests/updater/UpdaterTest.php b/src/shaarli/tests/updater/Upd
  
          UpdaterUtils::writeUpdatesFile($updatesFile, $updatesMethods);
          $readMethods = UpdaterUtils::readUpdatesFile($updatesFile);
-@@ -102,7 +102,7 @@ public function testWriteEmptyUpdatesFile()
+@@ -86,7 +87,7 @@ public function testWriteEmptyUpdatesFile()
          $this->expectException(\Exception::class);
          $this->expectExceptionMessageRegExp('/Updates file path is not set(.*)/');
  
@@ -44,7 +30,7 @@ diff a/src/shaarli/tests/updater/UpdaterTest.php b/src/shaarli/tests/updater/Upd
      }
  
      /**
-@@ -117,7 +117,7 @@ public function testWriteUpdatesFileNotWritable()
+@@ -101,7 +102,7 @@ public function testWriteUpdatesFileNotWritable()
          touch($updatesFile);
          chmod($updatesFile, 0444);
          try {
@@ -53,20 +39,3 @@ diff a/src/shaarli/tests/updater/UpdaterTest.php b/src/shaarli/tests/updater/Upd
          } catch (Exception $e) {
              unlink($updatesFile);
              throw $e;
-@@ -182,13 +182,13 @@ public function testUpdateFailed()
-     {
-         $this->expectException(\Exception::class);
- 
--        $updates = array(
-+        $updates = [
-             'updateMethodDummy1',
-             'updateMethodDummy2',
-             'updateMethodDummy3',
--        );
-+        ];
- 
--        $updater = new DummyUpdater($updates, array(), $this->conf, true);
-+        $updater = new DummyUpdater($updates, [], $this->conf, true);
-         $updater->update();
-     }
- 

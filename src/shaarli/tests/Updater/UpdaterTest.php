@@ -48,7 +48,7 @@ class UpdaterTest extends PHPUnit_Framework_TestCase
         $this->refDB = new \ReferenceLinkDB();
         $this->refDB->write(self::$testDatastore);
 
-        copy('tests/utils/config/configJson.json.php', self::$configFile .'.json.php');
+        copy('tests/utils/config/configJson.json.php', self::$configFile . '.json.php');
         $this->conf = new ConfigManager(self::$configFile);
         $this->bookmarkService = new BookmarkFileService(
             $this->conf,
@@ -129,17 +129,17 @@ class UpdaterTest extends PHPUnit_Framework_TestCase
      */
     public function testNoUpdates()
     {
-        $updates = array(
+        $updates = [
             'updateMethodDummy1',
             'updateMethodDummy2',
             'updateMethodDummy3',
             'updateMethodException',
-        );
-        $updater = new DummyUpdater($updates, array(), $this->conf, true);
-        $this->assertEquals(array(), $updater->update());
+        ];
+        $updater = new DummyUpdater($updates, [], $this->conf, true);
+        $this->assertEquals([], $updater->update());
 
-        $updater = new DummyUpdater(array(), array(), $this->conf, false);
-        $this->assertEquals(array(), $updater->update());
+        $updater = new DummyUpdater([], [], $this->conf, false);
+        $this->assertEquals([], $updater->update());
     }
 
     /**
@@ -147,13 +147,13 @@ class UpdaterTest extends PHPUnit_Framework_TestCase
      */
     public function testUpdatesFirstTime()
     {
-        $updates = array('updateMethodException',);
-        $expectedUpdates = array(
+        $updates = ['updateMethodException',];
+        $expectedUpdates = [
             'updateMethodDummy1',
             'updateMethodDummy2',
             'updateMethodDummy3',
-        );
-        $updater = new DummyUpdater($updates, array(), $this->conf, true);
+        ];
+        $updater = new DummyUpdater($updates, [], $this->conf, true);
         $this->assertEquals($expectedUpdates, $updater->update());
     }
 
@@ -162,14 +162,14 @@ class UpdaterTest extends PHPUnit_Framework_TestCase
      */
     public function testOneUpdate()
     {
-        $updates = array(
+        $updates = [
             'updateMethodDummy1',
             'updateMethodDummy3',
             'updateMethodException',
-        );
-        $expectedUpdate = array('updateMethodDummy2');
+        ];
+        $expectedUpdate = ['updateMethodDummy2'];
 
-        $updater = new DummyUpdater($updates, array(), $this->conf, true);
+        $updater = new DummyUpdater($updates, [], $this->conf, true);
         $this->assertEquals($expectedUpdate, $updater->update());
     }
 
