@@ -1,15 +1,9 @@
 diff a/src/shaarli/.gitignore b/src/shaarli/.gitignore	(rejected hunks)
-@@ -36,3 +36,13 @@ doc/html/
- tpl/*
- !tpl/default
- !tpl/vintage
-+
-+# Front end
-+node_modules
-+tpl/default/js
-+tpl/default/css
-+tpl/default/fonts
-+tpl/default/img
-+tpl/vintage/js
-+tpl/vintage/css
-+tpl/vintage/img
+@@ -25,6 +25,7 @@ coverage
+ sandbox
+ phpmd.html
+ phpdoc.xml
++.phpunit.result.cache
+ 
+ # User plugin configuration
+ plugins/*
