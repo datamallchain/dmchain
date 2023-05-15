@@ -311,19 +311,7 @@ function server_url($server)
             }
         }
 
-        if (isset($server['HTTP_X_FORWARDED_HOST'])) {
-            // Keep forwarded host
-            if (strpos($server['HTTP_X_FORWARDED_HOST'], ',') !== false) {
-                $hosts = explode(',', $server['HTTP_X_FORWARDED_HOST']);
-                $host = trim($hosts[0]);
-            } else {
-                $host = $server['HTTP_X_FORWARDED_HOST'];
-            }
-        } else {
-            $host = $server['SERVER_NAME'];
-        }
-
-        return $scheme.'://'.$host.$port;
+        return $scheme.'://'.$server['SERVER_NAME'].$port;
     }
 
     // SSL detection
