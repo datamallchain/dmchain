@@ -15,40 +15,45 @@ Using one of the following methods:
 - by downloading full release archives including all dependencies
 - by downloading Github archives
 - by cloning the Git repository
-- using Docker: [see the documentation](docker/shaarli-images)
+- using Docker: [see the documentation](docker/shaarli-images.md)
 
----
+--------------------------------------------------------------------------------
 
 ## Latest release (recommended)
+
 ### Download as an archive
-Get the latest released version from the [releases](https://github.com/shaarli/Shaarli/releases) page.
 
-**Download our *shaarli-full* archive** to include dependencies.
+In most cases, you should download the latest Shaarli release from the [releases](https://github.com/shaarli/Shaarli/releases) page. **Download our *shaarli-full* archive** to include dependencies.
 
-The current latest released version is `v0.9.1`
-
-Or in command lines:
+The current latest released version is `v0.9.3`
 
 ```bash
-$ wget https://github.com/shaarli/Shaarli/releases/download/v0.9.1/shaarli-v0.9.1-full.zip
-$ unzip shaarli-v0.9.1-full.zip
+$ wget https://github.com/shaarli/Shaarli/releases/download/v0.9.3/shaarli-v0.9.3-full.zip
+$ unzip shaarli-v0.9.3-full.zip
 $ mv Shaarli /path/to/shaarli/
 ```
 
-In most cases, download Shaarli from the [releases](https://github.com/shaarli/Shaarli/releases) page. 
-Cloning using `git` or downloading Github branches as zip files requires additional steps (see below).
-
 ### Using git
+
+Cloning using `git` or downloading Github branches as zip files requires additional steps:
+
+ * Install [Composer](Unit-tests.md#install_composer) to manage Shaarli dependencies.
+ * Install [python3-virtualenv](https://pypi.python.org/pypi/virtualenv) to build the local HTML documentation.
 
 ```
 $ mkdir -p /path/to/shaarli && cd /path/to/shaarli/
 $ git clone -b latest https://github.com/shaarli/Shaarli.git .
 $ composer install --no-dev --prefer-dist
+$ make translate
+$ make htmldoc
 ```
+
+--------------------------------------------------------------------------------
 
 ## Stable version
 
 The stable version has been experienced by Shaarli users, and will receive security updates.
+
 
 ### Download as an archive
 

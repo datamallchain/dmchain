@@ -90,7 +90,7 @@ try {
     exit;
 }
 
-define('shaarli_version', ApplicationUtils::getVersion(__DIR__ .'/'. ApplicationUtils::$VERSION_FILE));
+define('SHAARLI_VERSION', ApplicationUtils::getVersion(__DIR__ .'/'. ApplicationUtils::$VERSION_FILE));
 
 // Force cookie path (but do not change lifetime)
 $cookie = session_get_cookie_params();
@@ -289,7 +289,8 @@ function logout() {
         unset($_SESSION['uid']);
         unset($_SESSION['ip']);
         unset($_SESSION['username']);
-        unset($_SESSION['privateonly']);
+        unset($_SESSION['visibility']);
+        unset($_SESSION['untaggedonly']);
     }
     setcookie('shaarli_staySignedIn', FALSE, 0, WEB_PATH);
 }
@@ -970,6 +971,19 @@ function renderPage($conf, $pluginManager, $LINKSDB, $history, $sessionManager, 
         exit;
     }
 
+    // -------- User wants to see only untagged links (toggle)
+    if (isset($_GET['untaggedonly'])) {
+        $_SESSION['untaggedonly'] = empty($_SESSION['untaggedonly']);
+
+        if (! empty($_SERVER['HTTP_REFERER'])) {
+            $location = generateLocation($_SERVER['HTTP_REFERER'], $_SERVER['HTTP_HOST'], array('untaggedonly'));
+        } else {
+            $location = '?';
+        }
+        header('Location: '. $location);
+        exit;
+    }
+
     // -------- Handle other actions allowed for non-logged in users:
     if (!isLoggedIn())
     {
@@ -1142,45 +1156,23 @@ function renderPage($conf, $pluginManager, $LINKSDB, $history, $sessionManager, 
             exit;
         }
 
-        if (!tokenOk($_POST['token'])) {
-            die('Wrong token.');
+        if (!$sessionManager->checkToken($_POST['token'])) {
+            die(t('Wrong token.'));
         }
 
-        // Delete a tag:
-        if (isset($_POST['deletetag']) && !empty($_POST['fromtag'])) {
-            $needle = trim($_POST['fromtag']);
-            // True for case-sensitive tag search.
-            $linksToAlter = $LINKSDB->filterSearch(array('searchtags' => $needle), true);
-            foreach($linksToAlter as $key=>$value)
-            {
-                $tags = explode(' ',trim($value['tags']));
-                unset($tags[array_search($needle,$tags)]); // Remove tag.
-                $value['tags']=trim(implode(' ',$tags));
-                $LINKSDB[$key]=$value;
-                $history->updateLink($LINKSDB[$key]);
-            }
-            $LINKSDB->save($conf->get('resource.page_cache'));
-            echo '<script>alert("Tag was removed from '.count($linksToAlter).' links.");document.location=\'?do=changetag\';</script>';
-            exit;
+        $alteredLinks = $LINKSDB->renameTag(escape($_POST['fromtag']), escape($_POST['totag']));
+        $LINKSDB->save($conf->get('resource.page_cache'));
+        foreach ($alteredLinks as $link) {
+            $history->updateLink($link);
         }
-
-        // Rename a tag:
-        if (isset($_POST['renametag']) && !empty($_POST['fromtag']) && !empty($_POST['totag'])) {
-            $needle = trim($_POST['fromtag']);
-            // True for case-sensitive tag search.
-            $linksToAlter = $LINKSDB->filterSearch(array('searchtags' => $needle), true);
-            foreach($linksToAlter as $key=>$value) {
-                $tags = preg_split('/\s+/', trim($value['tags']));
-                // Replace tags value.
-                $tags[array_search($needle, $tags)] = trim($_POST['totag']);
-                $value['tags'] = implode(' ', array_unique($tags));
-                $LINKSDB[$key] = $value;
-                $history->updateLink($LINKSDB[$key]);
-            }
-            $LINKSDB->save($conf->get('resource.page_cache')); // Save to disk.
-            echo '<script>alert("Tag was renamed in '.count($linksToAlter).' links.");document.location=\'?searchtags='.urlencode(escape($_POST['totag'])).'\';</script>';
-            exit;
-        }
+        $delete = empty($_POST['totag']);
+        $redirect = $delete ? 'do=changetag' : 'searchtags='. urlencode(escape($_POST['totag']));
+        $count = count($alteredLinks);
+        $alert = $delete
+            ? sprintf(t('The tag was removed from %d link.', 'The tag was removed from %d links.', $count), $count)
+            : sprintf(t('The tag was renamed in %d link.', 'The tag was renamed in %d links.', $count), $count);
+        echo '<script>alert("'. $alert .'");document.location=\'?'. $redirect .'\';</script>';
+        exit;
     }
 
     // -------- User wants to add a link without using the bookmarklet: Show form.
@@ -1631,7 +1623,7 @@ function buildLinkList($PAGE,$LINKSDB, $conf, $pluginManager)
             'searchtags' => $searchtags,
             'searchterm' => $searchterm,
         ];
-        $linksToDisplay = $LINKSDB->filterSearch($request, false, $visibility);
+        $linksToDisplay = $LINKSDB->filterSearch($request, false, $visibility, !empty($_SESSION['untaggedonly']));
     }
 
     // ---- Handle paging.

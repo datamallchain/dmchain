@@ -25,7 +25,7 @@ The `Tag cloud` page diplays a "cloud" view of all tags in your Shaarli.
 
 ## Filtering RSS feeds/Picture wall
 
-RSS feeds can also be restricted to only return items matching a text/tag search: see [RSS feeds](RSS feeds).
+RSS feeds can also be restricted to only return items matching a text/tag search: see [RSS feeds](RSS-feeds).
 
 ## Filter buttons
 

@@ -6,11 +6,17 @@
           {'Filters'|t}
         </span>
         {if="isLoggedIn()"}
-          <a href="?privateonly" title="{'Filter private links'|t}"
-             class={if="$privateonly"}"filter-on"{else}"filter-off"{/if}
-          ><i class="fa fa-key"></i></a>
+        <a href="?visibility=private" title="{'Only display private links'|t}"
+           class="{if="$visibility==='private'"}filter-on{else}filter-off{/if}"
+        ><i class="fa fa-user-secret"></i></a>
+        <a href="?visibility=public" title="{'Only display public links'|t}"
+           class="{if="$visibility==='public'"}filter-on{else}filter-off{/if}"
+        ><i class="fa fa-globe"></i></a>
         {/if}
-        <a href="#" class="filter-off fold-all pure-u-lg-0" title="Fold all">
+        <a href="?untaggedonly" title="{'Filter untagged links'|t}"
+           class={if="$untaggedonly"}"filter-on"{else}"filter-off"{/if}
+        ><i class="fa fa-tag"></i></a>
+        <a href="#" class="filter-off fold-all pure-u-lg-0" title="{'Fold all'|t}">
           <i class="fa fa-chevron-up"></i>
         </a>
         {loop="$action_plugin"}
