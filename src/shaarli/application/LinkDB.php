@@ -417,22 +417,21 @@ You use the community supported version of the original Shaarli project, by Seba
      *                                - searchterm: term search
      * @param bool   $casesensitive Optional: Perform case sensitive filter
      * @param string $visibility    return only all/private/public links
-     * @param string $untaggedonly  return only untagged links
      *
      * @return array filtered links, all links if no suitable filter was provided.
      */
-    public function filterSearch($filterRequest = array(), $casesensitive = false, $visibility = 'all', $untaggedonly = false)
+    public function filterSearch($filterRequest = array(), $casesensitive = false, $visibility = 'all')
     {
         // Filter link database according to parameters.
         $searchtags = isset($filterRequest['searchtags']) ? escape($filterRequest['searchtags']) : '';
         $searchterm = isset($filterRequest['searchterm']) ? escape($filterRequest['searchterm']) : '';
 
         // Search tags + fullsearch - blank string parameter will return all links.
-        $type = LinkFilter::$FILTER_TAG | LinkFilter::$FILTER_TEXT; // == "vuotext"
+        $type = LinkFilter::$FILTER_TAG | LinkFilter::$FILTER_TEXT;
         $request = [$searchtags, $searchterm];
 
         $linkFilter = new LinkFilter($this);
-        return $linkFilter->filter($type, $request, $casesensitive, $visibility, $untaggedonly);
+        return $linkFilter->filter($type, $request, $casesensitive, $visibility);
     }
 
     /**

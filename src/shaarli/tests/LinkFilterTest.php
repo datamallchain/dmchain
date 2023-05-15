@@ -63,9 +63,10 @@ class LinkFilterTest extends PHPUnit_Framework_TestCase
             count(self::$linkFilter->filter(LinkFilter::$FILTER_TAG, ''))
         );
 
+        // Untagged only
         $this->assertEquals(
             self::$refDB->countUntaggedLinks(),
-            count(self::$linkFilter->filter(LinkFilter::$FILTER_TAG, /*$request=*/'', /*$casesensitive=*/false, /*$visibility=*/'all', /*$untaggedonly=*/true))
+            count(self::$linkFilter->filter(LinkFilter::$FILTER_TAG, false))
         );
 
         $this->assertEquals(
