@@ -1,4 +1,5 @@
 <?php
+
 namespace Shaarli\Helper;
 
 use Exception;
@@ -18,7 +19,7 @@ class ApplicationUtils
 
     public static $GITHUB_URL = 'https://github.com/shaarli/Shaarli';
     public static $GIT_RAW_URL = 'https://raw.githubusercontent.com/shaarli/Shaarli';
-    public static $GIT_BRANCHES = array('latest', 'stable');
+    public static $GIT_BRANCHES = ['latest', 'stable'];
     private static $VERSION_START_TAG = '<?php /* ';
     private static $VERSION_END_TAG = ' */ ?>';
 
@@ -66,8 +67,8 @@ class ApplicationUtils
         }
 
         return str_replace(
-            array(self::$VERSION_START_TAG, self::$VERSION_END_TAG, PHP_EOL),
-            array('', '', ''),
+            [self::$VERSION_START_TAG, self::$VERSION_END_TAG, PHP_EOL],
+            ['', '', ''],
             $data
         );
     }
@@ -186,13 +187,15 @@ class ApplicationUtils
         $rainTplDir = rtrim($conf->get('resource.raintpl_tpl'), '/');
 
         // Check script and template directories are readable
-        foreach ([
-                     'application',
-                     'inc',
-                     'plugins',
-                     $rainTplDir,
-                     $rainTplDir . '/' . $conf->get('resource.theme'),
-                 ] as $path) {
+        foreach (
+            [
+            'application',
+            'inc',
+            'plugins',
+            $rainTplDir,
+            $rainTplDir . '/' . $conf->get('resource.theme'),
+            ] as $path
+        ) {
             if (!is_readable(realpath($path))) {
                 $errors[] = '"' . $path . '" ' . t('directory is not readable');
             }
@@ -205,10 +208,10 @@ class ApplicationUtils
             ];
         } else {
             $folders = [
-                $conf->get('resource.thumbnails_cache'),
-                $conf->get('resource.data_dir'),
-                $conf->get('resource.page_cache'),
-                $conf->get('resource.raintpl_tmp'),
+            $conf->get('resource.thumbnails_cache'),
+            $conf->get('resource.data_dir'),
+            $conf->get('resource.page_cache'),
+            $conf->get('resource.raintpl_tmp'),
             ];
         }
 
@@ -226,13 +229,15 @@ class ApplicationUtils
         }
 
         // Check configuration files are readable and writable
-        foreach (array(
-                     $conf->getConfigFileExt(),
-                     $conf->get('resource.datastore'),
-                     $conf->get('resource.ban_file'),
-                     $conf->get('resource.log'),
-                     $conf->get('resource.update_check'),
-                 ) as $path) {
+        foreach (
+            [
+                 $conf->getConfigFileExt(),
+                 $conf->get('resource.datastore'),
+                 $conf->get('resource.ban_file'),
+                 $conf->get('resource.log'),
+                 $conf->get('resource.update_check'),
+             ] as $path
+        ) {
             if (!is_file(realpath($path))) {
                 # the file may not exist yet
                 continue;

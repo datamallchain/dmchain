@@ -1,6 +1,8 @@
 <?php
+
 namespace Shaarli\Plugin;
 
+use Shaarli\Bookmark\Bookmark;
 use Shaarli\Config\ConfigManager;
 use Shaarli\Plugin\Exception\PluginFileNotFoundException;
 use Shaarli\Plugin\Exception\PluginInvalidRouteException;
@@ -24,7 +26,15 @@ class PluginManager
      *
      * @var array $loadedPlugins
      */
-    private $loadedPlugins = array();
+    private $loadedPlugins = [];
+
+    /** @var array List of registered routes. Contains keys:
+     *               - `method`: HTTP method, GET/POST/PUT/PATCH/DELETE
+     *               - `route` (path): without prefix, e.g. `/up/{variable}`
+     *                 It will be later prefixed by `/plugin/<plugin name>/`.
+     *               - `callable` string, function name or FQN class's method, e.g. `demo_plugin_custom_controller`.
+     */
+    protected $registeredRoutes = [];
 
     /**
      * @var ConfigManager Configuration Manager instance.
@@ -61,7 +71,7 @@ class PluginManager
     public function __construct(&$conf)
     {
         $this->conf = $conf;
-        $this->errors = array();
+        $this->errors = [];
     }
 
     /**
@@ -105,7 +115,7 @@ class PluginManager
      *
      * @return void
      */
-    public function executeHooks($hook, &$data, $params = array())
+    public function executeHooks($hook, &$data, $params = [])
     {
         $metadataParameters = [
             'target' => '_PAGE_',
@@ -219,7 +229,7 @@ class PluginManager
      */
     public function getPluginsMeta()
     {
-        $metaData = array();
+        $metaData = [];
         $dirs = glob(self::$PLUGINS_PATH . '/*', GLOB_ONLYDIR | GLOB_MARK);
 
         // Browse all plugin directories.
@@ -240,9 +250,9 @@ class PluginManager
             if (isset($metaData[$plugin]['parameters'])) {
                 $params = explode(';', $metaData[$plugin]['parameters']);
             } else {
-                $params = array();
+                $params = [];
             }
-            $metaData[$plugin]['parameters'] = array();
+            $metaData[$plugin]['parameters'] = [];
             foreach ($params as $param) {
                 if (empty($param)) {
                     continue;

@@ -58,9 +58,13 @@ RUN rm -rf /etc/php7/php-fpm.d/www.conf \
 
 
 WORKDIR /var/www
-COPY --from=composer /app/shaarli shaarli
+COPY --from=node /shaarli shaarli
 
-RUN chown -R nginx:nginx .
+RUN chown -R nginx:nginx . \
+    && ln -sf /dev/stdout /var/log/nginx/shaarli.access.log \
+    && ln -sf /dev/stderr /var/log/nginx/shaarli.error.log
+
+VOLUME /var/www/shaarli/cache
 VOLUME /var/www/shaarli/data
 
 EXPOSE 80

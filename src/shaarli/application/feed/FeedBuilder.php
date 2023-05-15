@@ -1,4 +1,5 @@
 <?php
+
 namespace Shaarli\Feed;
 
 use DateTime;
@@ -101,22 +102,16 @@ class FeedBuilder
             $userInput['searchtags'] = false;
         }
 
+        $limit = $this->getLimit($userInput);
+
         // Optionally filter the results:
-        $linksToDisplay = $this->linkDB->search($userInput ?? [], null, false, false, true);
-
-        $nblinksToDisplay = $this->getNbLinks(count($linksToDisplay), $userInput);
-
-        // Can't use array_keys() because $link is a LinkDB instance and not a real array.
-        $keys = array();
-        foreach ($linksToDisplay as $key => $value) {
-            $keys[] = $key;
-        }
+        $searchResult = $this->linkDB->search($userInput ?? [], null, false, false, true, ['limit' => $limit]);
 
         $pageaddr = escape(index_url($this->serverInfo));
         $this->formatter->addContextData('index_url', $pageaddr);
-        $linkDisplayed = array();
-        for ($i = 0; $i < $nblinksToDisplay && $i < count($keys); $i++) {
-            $linkDisplayed[$keys[$i]] = $this->buildItem($feedType, $linksToDisplay[$keys[$i]], $pageaddr);
+        $links = [];
+        foreach ($searchResult->getBookmarks() as $key => $bookmark) {
+            $links[$key] = $this->buildItem($feedType, $bookmark, $pageaddr);
         }
 
         $data['language'] = $this->getTypeLanguage($feedType);
@@ -176,9 +171,9 @@ class FeedBuilder
         $data = $this->formatter->format($link);
         $data['guid'] = rtrim($pageaddr, '/') . '/shaare/' . $data['shorturl'];
         if ($this->usePermalinks === true) {
-            $permalink = '<a href="'. $data['url'] .'" title="'. t('Direct link') .'">'. t('Direct link') .'</a>';
+            $permalink = '<a href="' . $data['url'] . '" title="' . t('Direct link') . '">' . t('Direct link') . '</a>';
         } else {
-            $permalink = '<a href="'. $data['guid'] .'" title="'. t('Permalink') .'">'. t('Permalink') .'</a>';
+            $permalink = '<a href="' . $data['guid'] . '" title="' . t('Permalink') . '">' . t('Permalink') . '</a>';
         }
         $data['description'] .= PHP_EOL . PHP_EOL . '<br>&#8212; ' . $permalink;
 

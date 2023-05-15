@@ -17,7 +17,7 @@ class BookmarkMarkdownFormatter extends BookmarkDefaultFormatter
     /**
      * When this tag is present in a bookmark, its description should not be processed with Markdown
      */
-    const NO_MD_TAG = 'nomarkdown';
+    public const NO_MD_TAG = 'nomarkdown';
 
     /** @var \Parsedown instance */
     protected $parsedown;
@@ -72,7 +72,7 @@ class BookmarkMarkdownFormatter extends BookmarkDefaultFormatter
         $processedDescription = $this->replaceTokens($processedDescription);
 
         if (!empty($processedDescription)) {
-            $processedDescription = '<div class="markdown">'. $processedDescription . '</div>';
+            $processedDescription = '<div class="markdown">' . $processedDescription . '</div>';
         }
 
         return $processedDescription;
@@ -111,7 +111,7 @@ class BookmarkMarkdownFormatter extends BookmarkDefaultFormatter
             function ($match) use ($allowedProtocols, $indexUrl) {
                 $link = startsWith($match[1], '?') || startsWith($match[1], '/') ? $indexUrl : '';
                 $link .= whitelist_protocols($match[1], $allowedProtocols);
-                return ']('. $link.')';
+                return '](' . $link . ')';
             },
             $description
         );
@@ -140,8 +140,15 @@ class BookmarkMarkdownFormatter extends BookmarkDefaultFormatter
          * \p{L} - letter from any language
          * \p{Mn} - any non marking space (accents, umlauts, etc)
          */
-        $regex = '/(^|\s)#([\p{Pc}\p{N}\p{L}\p{Mn}]+)/mui';
-        $replacement = '$1[#$2]('. $indexUrl .'./add-tag/$2)';
+        $regex = '/(^|\s)#([\p{Pc}\p{N}\p{L}\p{Mn}' . $tokens . ']+)/mui';
+        $replacement = function (array $match) use ($indexUrl): string {
+            $cleanMatch = str_replace(
+                BookmarkDefaultFormatter::SEARCH_HIGHLIGHT_OPEN,
+                '',
+                str_replace(BookmarkDefaultFormatter::SEARCH_HIGHLIGHT_CLOSE, '', $match[2])
+            );
+            return $match[1] . '[#' . $match[2] . '](' . $indexUrl . './add-tag/' . $cleanMatch . ')';
+        };
 
         $descriptionLines = explode(PHP_EOL, $description);
         $descriptionOut = '';
@@ -182,17 +189,17 @@ class BookmarkMarkdownFormatter extends BookmarkDefaultFormatter
      */
     protected function sanitizeHtml($description)
     {
-        $escapeTags = array(
+        $escapeTags = [
             'script',
             'style',
             'link',
             'iframe',
             'frameset',
             'frame',
-        );
+        ];
         foreach ($escapeTags as $tag) {
             $description = preg_replace_callback(
-                '#<\s*'. $tag .'[^>]*>(.*</\s*'. $tag .'[^>]*>)?#is',
+                '#<\s*' . $tag . '[^>]*>(.*</\s*' . $tag . '[^>]*>)?#is',
                 function ($match) {
                     return escape($match[0]);
                 },
